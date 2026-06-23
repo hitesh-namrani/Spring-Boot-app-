@@ -53,7 +53,7 @@ public class Client {
         // Password Validation
         String password;
         while (true) {
-            System.out.print("Enter Password (max 8 characters): ");
+            System.out.print("Enter Password (max 8 characters or number): ");
             password = sc.nextLine();
 
             if (password.length() <= 8) {
