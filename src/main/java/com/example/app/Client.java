@@ -1,13 +1,10 @@
-package com.example.app;
+import java.util.Scanner;
 
-
-
-  public class Client {
-
-    private int id;
-    private String username;
-    private String password;
-    private double balance;
+public class Client {
+    int id;
+    String username;
+    String password;
+    double balance;
 
     public Client(int id, String username, String password, double balance) {
         this.id = id;
@@ -16,57 +13,63 @@ package com.example.app;
         this.balance = balance;
     }
 
-    // Getters
-    public int getId() {
-        return id;
+    public void display() {
+        System.out.println("\nClient Details");
+        System.out.println("ID: " + id);
+        System.out.println("Username: " + username);
+        System.out.println("Balance: " + balance);
     }
 
-    public String getUsername() {
-        return username;
-    }
+    public static void main(String[] args) {
 
-    public String getPassword() {
-        return password;
-    }
+        Scanner sc = new Scanner(System.in);
 
-    public double getBalance() {
-        return balance;
-    }
+        // ID Validation
+        int id;
+        while (true) {
+            System.out.print("Enter 5-digit ID: ");
+            id = sc.nextInt();
 
-    // Setters
-    public void setUsername(String username) {
-        this.username = username;
-    }
+            if (id >= 10000 && id <= 99999) {
+                break;
+            }
+            System.out.println("Invalid ID! ID must contain exactly 5 digits.");
+        }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+        sc.nextLine(); // consume newline
 
-    public void setBalance(double balance) {
-        this.balance = balance;
-    }
+        // Username Validation
+        String username;
+        while (true) {
+            System.out.print("Enter Username (must contain a special character): ");
+            username = sc.nextLine();
 
-    @Override
-    public String toString() {
-        return "Client{" +
-                "id=" + id +
-                ", username='" + username + '\'' +
-                ", balance=" + balance +
-                '}';
+            if (username.matches(".*[^a-zA-Z0-9].*")) {
+                break;
+            }
+            System.out.println("Invalid Username! Include at least one special character.");
+        }
+
+        // Password Validation
+        String password;
+        while (true) {
+            System.out.print("Enter Password (max 8 characters): ");
+            password = sc.nextLine();
+
+            if (password.length() <= 8) {
+                break;
+            }
+            System.out.println("Invalid Password! Password cannot exceed 8 characters.");
+        }
+
+        // Balance
+        System.out.print("Enter Balance: ");
+        double balance = sc.nextDouble();
+
+        Client client = new Client(id, username, password, balance);
+
+        client.display();
+
+        sc.close();
     }
 }
-  public static void main(Strings, args[]){
-     public static void main(String[] args) {
-        Client client = new Client(
-                1,
-                "john123",
-                "password123",
-                5000.0
-        );
-
-        System.out.println(client);
-    }
-    
-  }
-  
-
