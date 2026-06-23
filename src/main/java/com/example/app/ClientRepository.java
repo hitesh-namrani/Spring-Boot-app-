@@ -1,6 +1,6 @@
 package com.example.app;
-import org.springframework.data.jpa.respository.JpaRespositry;
-  public interface ClientRespository extends JpaRespositry<Client,String>{
+import org.springframework.data.jpa.repository.JpaRepository;
+  public interface ClientRepository extends JpaRepositry<Client,String>{
     
   }
 
