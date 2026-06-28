@@ -1,14 +1,20 @@
-package com.example.app;
+package com.example.app.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
+@Getter
+@Setter
 public class Client {
 
     @Id
     private String username;
 
+    @JsonIgnore
     private String password;
 
     private Double balance;
@@ -20,10 +26,6 @@ public class Client {
         this.password = password;
         this.balance = 0.0;
     }
-
-    public String getUsername() { return username; }
-    public Double getBalance() { return balance; }
-    public void setBalance(Double balance) { this.balance = balance; }
 
     public boolean checkPassword(String inputPassword) {
         return this.password.equals(inputPassword);
