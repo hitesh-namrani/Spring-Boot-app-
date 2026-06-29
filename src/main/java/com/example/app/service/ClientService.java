@@ -6,6 +6,11 @@ import com.example.app.exception.WalletException;
 import com.example.app.logger.AppLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+package com.example.app.service;
+/*
+Service class is responsible for handling all client-related operations
+such as registration, authentication, deposits, and withdrawals.
+*/
 
 @Service
 public class ClientService {
@@ -15,57 +20,109 @@ public class ClientService {
 
   @Autowired
   private AppLogger logger;
-
+  
+  /*
+  Registers a new client.
+  return Saved client object
+  throws WalletException if the username already exists
+  */
   public Client registerClient(String username, String rawPassword) throws WalletException {
+    // Check whether the username already exists.
     if (repository.findById(username).isPresent()) {
       logger.logError("REGISTER", "Username '" + username + "' is already taken.");
       throw new WalletException("ERR_USER_EXISTS","Username is already taken!");
     }
+    
+    // Create a new client with the provided credentials.
     Client client = new Client(username, rawPassword);
+            
+    // Log successful registration.
     logger.logTransaction(username, "REGISTER", 0.0);
+    
+    // Save the client in the database.
     return repository.save(client);
   }
+  
+  /*
+  Authenticates a client using username and password.
+  @param username Client username
+  @param password Client password
+  return Authenticated client
+  throws WalletException if the client is not found or password is incorrect
+  */
 
   public Client verifyLogin(String username, String password) throws WalletException {
+    // Retrieve the client from the database.
     Client client = repository.findById(username)
             .orElseThrow(() -> {
               logger.logError("LOGIN", "Client '" + username + "' not found.");
               return new WalletException("ERR_USER_NOT_FOUND","Client not found!");
             });
-
+    
+    // Validate the password.
     if (!client.checkPassword(password)) {
       logger.logError("LOGIN", "Incorrect password for '" + username + "'.");
       throw new WalletException("ERR_WRONG_PASSWORD","Incorrect password!");
     }
     return client;
   }
+  
+    /*
+    Deposits money into the client's wallet.
+    @param username Client username
+    @param password Client password
+    @param amount   Amount to deposit
+    return Updated client object
+    throws WalletException if the amount is invalid or authentication fails
+    */
 
   public Client processDeposit(String username, String password, Double amount) throws WalletException {
+    // Deposit amount must be positive.
     if (amount <= 0) {
       logger.logError("DEPOSIT", "Attempted invalid deposit amount: " + amount);
       throw new WalletException("ERR_INVALID_AMOUNT","Amount must be greater than zero.");
     }
+    
+    // Authenticate the client.
     Client client = verifyLogin(username, password);
+    // Add the amount to the current balance.
     client.setBalance(client.getBalance() + amount);
-
+    
+    // Record the transaction.
     logger.logTransaction(username, "DEPOSIT", amount);
+    
+    // Save the updated balance.
     return repository.save(client);
   }
-
+  
+  /*
+  Withdraws money from the client's wallet.
+  @param username Client username
+  @param password Client password
+  @param amount   Amount to withdraw
+  return Updated client object
+  throws WalletException if the amount is invalid, authentication fails, or insufficient balance is available
+  */
   public Client processWithdraw(String username, String password, Double amount) throws WalletException {
+    // Withdrawal amount must be positive.
     if (amount <= 0) {
       logger.logError("WITHDRAWAL", "Attempted invalid withdrawal amount: " + amount);
       throw new WalletException("ERR_INVALID_AMOUNT","Amount must be greater than zero.");
     }
-
+    
+    // Authenticate the client.
     Client client = verifyLogin(username, password);
-
+    
+    // Ensure sufficient balance before withdrawal.
     if (client.getBalance() < amount) {
       logger.logError("WITHDRAWAL", "Insufficient funds for '" + username + "'.");
       throw new WalletException("ERR_INSUFFICIENT_FUNDS","Insufficient funds!");
     }
-
+    
+    // Deduct the withdrawal amount.
     client.setBalance(client.getBalance() - amount);
+
+    // Log the successful transaction.
     logger.logTransaction(username, "WITHDRAWAL", amount);
     return repository.save(client);
   }
