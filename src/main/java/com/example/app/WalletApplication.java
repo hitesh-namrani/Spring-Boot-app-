@@ -1,4 +1,5 @@
 package com.example.app;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 /*
@@ -7,15 +8,14 @@ This class bootstraps and launches the application.
 */
 
 @SpringBootApplication
-public class WalletApplication{
+public class WalletApplication {
+
   /*
   Starts the Spring Boot application.
   @param args command-line arguments passed during application startup
   */
-  
-  public static void main(String[]  args){
-    SpringApplication.run(WalletApplication.class,args);
-  }
+
+    public static void main(String[] args) {
+        SpringApplication.run(WalletApplication.class, args);
+    }
 }
-
-

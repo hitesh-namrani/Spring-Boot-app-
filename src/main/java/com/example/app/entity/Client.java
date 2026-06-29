@@ -14,23 +14,24 @@ Stores the client's login credentials and account balance.
 @Getter
 @Setter
 public class Client {
-    
+
     //username used as the primary key.
     @Id
     private String username;
-    
+
     //Password excluded from JSON responses for security.
     @JsonIgnore
     private String password;
-    
+
     //Current account balance of the client.
     private Double balance;
-    
+
     /*
     Default constructor required by JPA.
     Should not be used directly.
     */
-    protected Client() {}
+    protected Client() {
+    }
     
     /*
     Creates a new client with the specified username and password.

@@ -14,7 +14,7 @@ such as registration, deposit, withdrawal, and balance inquiry.
 @RestController
 @RequestMapping("/api/clients")
 public class ClientController {
-    
+
     //Service layer responsible for handling client-related business logic.
     @Autowired
     private ClientService service;
@@ -30,7 +30,7 @@ public class ClientController {
         final Client newClient = service.registerClient(username, password);
         return new ApiResponse("Success", "Account created successfully", newClient);
     }
-    
+
     /*
     Deposits the specified amount into the client's wallet.
     return an API response containing the updated client details
@@ -44,7 +44,7 @@ public class ClientController {
         final Client client = service.processDeposit(username, password, amount);
         return new ApiResponse("Success", "Deposit successful", client);
     }
-    
+
     /*
     Withdraws the specified amount from the client's wallet.
     @param username the client's username
@@ -61,7 +61,7 @@ public class ClientController {
         final Client client = service.processWithdraw(username, password, amount);
         return new ApiResponse("Success", "Withdraw successful", client);
     }
-    
+
     /*
     Retrieves the current wallet balance for the authenticated client.
     return an API response containing the client's current balance

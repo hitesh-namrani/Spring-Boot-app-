@@ -27,10 +27,10 @@ public class GlobalExceptionHandler {
         Creates a response body containing the error status,
         application-specific error code, and error message.
         */
-        
+
         Map<String, String> errorResponse = new HashMap<>();
 
-     // Injecting your custom error code and the readable message
+        // Injecting your custom error code and the readable message
         errorResponse.put("status", "FAILED");
         errorResponse.put("errorCode", ex.getErrorCode());
         errorResponse.put("errorMessage", ex.getMessage());

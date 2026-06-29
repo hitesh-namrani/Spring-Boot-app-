@@ -1,6 +1,7 @@
 package com.example.app.dto;
 
 // Import the Client entity
+
 import com.example.app.entity.Client;
 
 // Lombok annotations to reduce boilerplate code
@@ -29,7 +30,7 @@ This class contains:
 
 // Generates a constructor with all fields as parameters
 @AllArgsConstructor
-public class ApiResponse{
+public class ApiResponse {
 
     // Status of the API response (e.g., "success", "error")
     private String status;
