@@ -34,7 +34,7 @@ public class ClientService {
     }
     
     // Create a new client with the provided credentials.
-    Client client = new Client(username, rawPassword);
+    final Client client = new Client(username, rawPassword);
             
     // Log successful registration.
     logger.logTransaction(username, "REGISTER", 0.0);
@@ -53,7 +53,7 @@ public class ClientService {
 
   public Client verifyLogin(String username, String password) throws WalletException {
     // Retrieve the client from the database.
-    Client client = repository.findById(username)
+    final Client client = repository.findById(username)
             .orElseThrow(() -> {
               logger.logError("LOGIN", "Client '" + username + "' not found.");
               return new WalletException("ERR_USER_NOT_FOUND","Client not found!");
@@ -84,7 +84,7 @@ public class ClientService {
     }
     
     // Authenticate the client.
-    Client client = verifyLogin(username, password);
+    final Client client = verifyLogin(username, password);
     // Add the amount to the current balance.
     client.setBalance(client.getBalance() + amount);
     
@@ -111,7 +111,7 @@ public class ClientService {
     }
     
     // Authenticate the client.
-    Client client = verifyLogin(username, password);
+    final Client client = verifyLogin(username, password);
     
     // Ensure sufficient balance before withdrawal.
     if (client.getBalance() < amount) {
