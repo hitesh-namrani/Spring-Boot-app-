@@ -10,10 +10,10 @@ This class bootstraps and launches the application.
 @SpringBootApplication
 public class WalletApplication {
 
-  /*
-  Starts the Spring Boot application.
-  @param args command-line arguments passed during application startup
-  */
+    /*
+    Starts the Spring Boot application.
+    @param args command-line arguments passed during application startup
+    */
 
     public static void main(String[] args) {
         SpringApplication.run(WalletApplication.class, args);
