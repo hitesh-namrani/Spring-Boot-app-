@@ -4,11 +4,16 @@ package com.example.app.dto;
 
 import com.example.app.entity.Client;
 
+//import JsonInclude
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 // Lombok annotations to reduce boilerplate code
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.Map;
 
 /*
 Data Transfer Object (DTO) used to send API responses.
@@ -30,6 +35,9 @@ This class contains:
 
 // Generates a constructor with all fields as parameters
 @AllArgsConstructor
+
+// Automatically hides fields that are empty/null!
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse {
 
     // Status of the API response (e.g., "success", "error")
@@ -38,7 +46,16 @@ public class ApiResponse {
     // Message describing the result of the API call
     private String message;
 
+    //hashmap to provide data
+    private Map<String,Object> data;
+
     // Client data returned in the response
     private Client client;
 
+    //constructor if no hashmap is needed
+    public ApiResponse(String status, String message, Client client) {
+        this.status = status;
+        this.message = message;
+        this.client = client;
+    }
 }

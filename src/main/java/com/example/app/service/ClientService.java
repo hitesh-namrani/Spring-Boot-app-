@@ -66,25 +66,30 @@ public class ClientService {
         }
         return client;
     }
-  
+
+    // Helper method to look up a user whose username is securely tied to an active session
+    public Client getClientByUsername(String username) throws WalletException {
+        return repository.findById(username)
+                .orElseThrow(() -> new WalletException("ERR_USER_NOT_FOUND", "Client session user no longer exists!"));
+    }
+
     /*
     Deposits money into the client's wallet.
     @param username Client username
-    @param password Client password
     @param amount   Amount to deposit
     return Updated client object
     throws WalletException if the amount is invalid or authentication fails
     */
 
-    public Client processDeposit(String username, String password, Double amount) throws WalletException {
+    public Client processDeposit(String username, Double amount) throws WalletException {
         // Deposit amount must be positive.
         if (amount <= 0) {
             logger.logError("DEPOSIT", "Attempted invalid deposit amount: " + amount);
             throw new WalletException("ERR_INVALID_AMOUNT", "Amount must be greater than zero.");
         }
 
-        // Authenticate the client.
-        final Client client = verifyLogin(username, password);
+        // get client via username.
+        final Client client = getClientByUsername(username);
         // Add the amount to the current balance.
         client.setBalance(client.getBalance() + amount);
 
@@ -98,12 +103,11 @@ public class ClientService {
     /*
     Withdraws money from the client's wallet.
     @param username Client username
-    @param password Client password
     @param amount   Amount to withdraw
     return Updated client object
     throws WalletException if the amount is invalid, authentication fails, or insufficient balance is available
     */
-    public Client processWithdraw(String username, String password, Double amount) throws WalletException {
+    public Client processWithdraw(String username, Double amount) throws WalletException {
         final String WITHDRAWAL = "WITHDRAWAL";
         // Withdrawal amount must be positive.
         if (amount <= 0) {
@@ -111,8 +115,8 @@ public class ClientService {
             throw new WalletException("ERR_INVALID_AMOUNT", "Amount must be greater than zero.");
         }
 
-        // Authenticate the client.
-        final Client client = verifyLogin(username, password);
+        // get client by username.
+        final Client client = getClientByUsername(username);
 
         // Ensure sufficient balance before withdrawal.
         if (client.getBalance() < amount) {
