@@ -35,6 +35,15 @@ public class ClientController {
         return new ApiResponse(SUCCESS, "Account created successfully", newClient);
     }
 
+    /*
+    Authenticates a client and initializes a secure session.
+
+    @param username The client's unique username credential
+    @param password The client's account password credential
+    @param session  The current HTTP session context to persist state
+    @return An API response containing the logged-in client details
+    @throws WalletException If the credentials do not match or user is not found
+    */
     @PostMapping("/login")
     public ApiResponse login(@RequestParam String username, @RequestParam String password, HttpSession session) throws WalletException {
         Client client = service.verifyLogin(username, password);
@@ -45,6 +54,12 @@ public class ClientController {
         return new ApiResponse("Success", "Logged in successfully", client);
     }
 
+    /*
+    Terminate the client session and clear tracking details.
+
+    @param session The active HTTP session to be invalidated
+    @return An API response indicating successful logout status
+    */
     @PostMapping("/logout")
     public ApiResponse logout(HttpSession session) {
         // Instantly invalidates the active session cookie for explicit testing
