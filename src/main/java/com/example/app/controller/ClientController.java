@@ -51,7 +51,7 @@ public class ClientController {
         // Save user identifying data securely in server memory
         session.setAttribute("user", client.getUsername());
 
-        return new ApiResponse("Success", "Logged in successfully", client);
+        return new ApiResponse(SUCCESS, "Logged in successfully", client);
     }
 
     /*
@@ -64,7 +64,7 @@ public class ClientController {
     public ApiResponse logout(HttpSession session) {
         // Instantly invalidates the active session cookie for explicit testing
         session.invalidate();
-        return new ApiResponse("Success", "Logged out successfully", null);
+        return new ApiResponse(SUCCESS, "Logged out successfully", null);
     }
 
     /*
@@ -92,11 +92,11 @@ public class ClientController {
         // 2. Route the request based on the 'type' parameter
         if ("deposit".equalsIgnoreCase(type)) {
             updatedClient = service.processDeposit(sessionUser, amount);
-            return new ApiResponse("Success", "Deposit successful", updatedClient);
+            return new ApiResponse(SUCCESS, "Deposit successful", updatedClient);
 
         } else if ("withdraw".equalsIgnoreCase(type)) {
             updatedClient = service.processWithdraw(sessionUser, amount);
-            return new ApiResponse("Success", "Withdrawal successful", updatedClient);
+            return new ApiResponse(SUCCESS, "Withdrawal successful", updatedClient);
 
         } else {
             // 3. Handle invalid transaction types gracefully
