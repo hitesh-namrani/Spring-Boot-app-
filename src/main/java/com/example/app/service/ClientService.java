@@ -14,12 +14,12 @@ such as registration, authentication, deposits, and withdrawals.
 public class ClientService {
 
     private final ClientRepository repository;
-
-    ClientService(ClientRepository repository) {
+    private final AppLogger logger;
+    ClientService(ClientRepository repository,AppLogger logger) {
         this.repository = repository;
+        this.logger=logger;
     }
 
-    private final AppLogger logger = new AppLogger();
 
     /*
     Registers a new client.
