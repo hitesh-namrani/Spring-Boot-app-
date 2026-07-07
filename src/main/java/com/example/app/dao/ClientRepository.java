@@ -7,6 +7,8 @@ import com.example.app.entity.Client;
 // Import JpaRepository to provide built-in CRUD operations
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 /*
 Repository interface for Client entity.
 
@@ -23,6 +25,6 @@ automatically generates it at runtime.
 Client  -> Entity class
 String  -> Data type of the primary key (ID)
 */
-public interface ClientRepository extends JpaRepository<Client, String> {
-
+public interface ClientRepository extends JpaRepository<Client, Long> {
+    Optional<Client> findByUsername(String username);
 }

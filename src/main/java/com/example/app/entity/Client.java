@@ -1,8 +1,7 @@
 package com.example.app.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 /*
@@ -15,8 +14,13 @@ Stores the client's login credentials and account balance.
 @Setter
 public class Client {
 
-    //username used as the primary key.
+    //New Auto-Incrementing Primary Key
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    //Username is no longer @Id, but it MUST be unique and not null
+    @Column(unique = true, nullable = false)
     private String username;
 
     //Password excluded from JSON responses for security.

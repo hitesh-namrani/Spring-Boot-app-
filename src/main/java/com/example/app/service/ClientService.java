@@ -28,7 +28,7 @@ public class ClientService {
     */
     public Client registerClient(String username, String rawPassword) throws WalletException {
         // Check whether the username already exists.
-        if (repository.findById(username).isPresent()) {
+        if (repository.findByUsername(username).isPresent()) {
             logger.logError("REGISTER", "Username '" + username + "' is already taken.");
             throw new WalletException("ERR_USER_EXISTS", "Username is already taken!");
         }
@@ -53,7 +53,7 @@ public class ClientService {
 
     public Client verifyLogin(String username, String password) throws WalletException {
         // Retrieve the client from the database.
-        final Client client = repository.findById(username)
+        final Client client = repository.findByUsername(username)
                 .orElseThrow(() -> {
                     logger.logError("LOGIN", "Client '" + username + "' not found.");
                     return new WalletException("ERR_USER_NOT_FOUND", "Client not found!");
@@ -69,7 +69,7 @@ public class ClientService {
 
     // Helper method to look up a user whose username is securely tied to an active session
     public Client getClientByUsername(String username) throws WalletException {
-        return repository.findById(username)
+        return repository.findByUsername(username)
                 .orElseThrow(() -> new WalletException("ERR_USER_NOT_FOUND", "Client session user no longer exists!"));
     }
 
