@@ -50,12 +50,19 @@ public class ApiResponse {
     private Map<String,Object> data;
 
     // Client data returned in the response
-    private Client client;
+    private ClientResponse client;
 
     //constructor if no hashmap is needed
     public ApiResponse(String status, String message, Client client) {
         this.status = status;
         this.message = message;
-        this.client = client;
+        this.client = client != null ? new ClientResponse(client) : null;
+    }
+
+    public ApiResponse(String status, String message,Map<String,Object> data, Client client) {
+        this.status = status;
+        this.message = message;
+        this.data=data;
+        this.client = client != null ? new ClientResponse(client) : null;
     }
 }

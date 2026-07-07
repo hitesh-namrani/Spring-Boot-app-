@@ -43,10 +43,10 @@ public class Client {
         this.password = password;
         this.balance = 0.0;
     }
-      /*
-     Verifies whether the provided password matches the stored password.
-     return true if the password matches, else return false.
-     */
+    /*
+    Verifies whether the provided password matches the stored password.
+    return true if the password matches, else return false.
+    */
 
     public boolean checkPassword(String inputPassword) {
         return this.password.equals(inputPassword);
