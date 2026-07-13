@@ -1,5 +1,7 @@
 package com.example.app.controller;
 
+import com.example.app.dto.AuthRequest;
+import com.example.app.dto.Status;
 import com.example.app.entity.Client;
 import com.example.app.exception.WalletException;
 import com.example.app.service.ClientService;
@@ -22,7 +24,6 @@ public class ClientController {
         this.service=service;
     }
 
-    private static final String SUCCESS="Success";
     /*
     Registers a new client account.
     return an API response containing the newly created client
@@ -30,9 +31,9 @@ public class ClientController {
     */
 
     @PostMapping("/register")
-    public ApiResponse register(@RequestParam String username, @RequestParam String password) throws WalletException {
-        final Client newClient = service.registerClient(username, password);
-        return new ApiResponse(SUCCESS, "Account created successfully", newClient);
+    public ApiResponse register(@RequestBody AuthRequest request) throws WalletException {
+        final Client newClient = service.registerClient(request.getUsername(), request.getPassword());
+        return new ApiResponse(Status.Success, "Account created successfully", newClient);
     }
 
     /*
@@ -45,13 +46,13 @@ public class ClientController {
     @throws WalletException If the credentials do not match or user is not found
     */
     @PostMapping("/login")
-    public ApiResponse login(@RequestParam String username, @RequestParam String password, HttpSession session) throws WalletException {
-        Client client = service.verifyLogin(username, password);
+    public ApiResponse login(@RequestBody AuthRequest request, HttpSession session) throws WalletException {
+        Client client = service.verifyLogin(request.getUsername(), request.getPassword());
 
         // Save user identifying data securely in server memory
         session.setAttribute("user", client.getUsername());
 
-        return new ApiResponse(SUCCESS, "Logged in successfully", client);
+        return new ApiResponse(Status.Success, "Logged in successfully", client);
     }
 
     /*
@@ -64,7 +65,7 @@ public class ClientController {
     public ApiResponse logout(HttpSession session) {
         // Instantly invalidates the active session cookie for explicit testing
         session.invalidate();
-        return new ApiResponse(SUCCESS, "Logged out successfully", null);
+        return new ApiResponse(Status.Success, "Logged out successfully", null);
     }
 
     /*
@@ -92,11 +93,11 @@ public class ClientController {
         // 2. Route the request based on the 'type' parameter
         if ("deposit".equalsIgnoreCase(type)) {
             updatedClient = service.processDeposit(sessionUser, amount);
-            return new ApiResponse(SUCCESS, "Deposit successful", updatedClient);
+            return new ApiResponse(Status.Success, "Deposit successful", updatedClient);
 
         } else if ("withdraw".equalsIgnoreCase(type)) {
             updatedClient = service.processWithdraw(sessionUser, amount);
-            return new ApiResponse(SUCCESS, "Withdrawal successful", updatedClient);
+            return new ApiResponse(Status.Success, "Withdrawal successful", updatedClient);
 
         } else {
             // 3. Handle invalid transaction types gracefully
@@ -116,6 +117,6 @@ public class ClientController {
             throw new WalletException("ERR_UNAUTHORIZED", "Active session not found. Please log in first.");
         }
         final Client client = service.getClientByUsername(sessionUser);
-        return new ApiResponse(SUCCESS, "Balance retrieved successfully", client);
+        return new ApiResponse(Status.Success, "Balance retrieved successfully", client);
     }
 }

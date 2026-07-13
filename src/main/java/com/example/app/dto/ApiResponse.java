@@ -41,7 +41,7 @@ This class contains:
 public class ApiResponse {
 
     // Status of the API response (e.g., "success", "error")
-    private String status;
+    private Status status;
 
     // Message describing the result of the API call
     private String message;
@@ -53,13 +53,13 @@ public class ApiResponse {
     private ClientResponse client;
 
     //constructor if no hashmap is needed
-    public ApiResponse(String status, String message, Client client) {
+    public ApiResponse(Status status, String message, Client client) {
         this.status = status;
         this.message = message;
         this.client = client != null ? new ClientResponse(client) : null;
     }
 
-    public ApiResponse(String status, String message,Map<String,Object> data, Client client) {
+    public ApiResponse(Status status, String message,Map<String,Object> data, Client client) {
         this.status = status;
         this.message = message;
         this.data=data;

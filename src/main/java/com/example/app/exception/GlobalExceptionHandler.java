@@ -1,5 +1,6 @@
 package com.example.app.exception;
 
+import com.example.app.dto.Status;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -31,7 +32,7 @@ public class GlobalExceptionHandler {
         Map<String, String> errorResponse = new HashMap<>();
 
         // Injecting your custom error code and the readable message
-        errorResponse.put("status", "FAILED");
+        errorResponse.put("status", String.valueOf(Status.Failed));
         errorResponse.put("errorCode", ex.getErrorCode());
         errorResponse.put("errorMessage", ex.getMessage());
 
