@@ -5,9 +5,13 @@ import com.example.app.dto.Status;
 import com.example.app.entity.Client;
 import com.example.app.exception.WalletException;
 import com.example.app.service.ClientService;
+import com.example.app.util.JwtUtil;
 import org.springframework.web.bind.annotation.*;
 import com.example.app.dto.ApiResponse;
 import jakarta.servlet.http.HttpSession;
+
+import java.util.HashMap;
+import java.util.Map;
 /*
 REST controller that provides API endpoints for client account operations
 such as registration, deposit, withdrawal, and balance inquiry.
@@ -19,9 +23,11 @@ public class ClientController {
 
     //Service layer responsible for handling client-related business logic.
     private final ClientService service;
+    private final JwtUtil jwtUtil;
 
-    ClientController(ClientService service){
+    ClientController(ClientService service,JwtUtil jwtUtil){
         this.service=service;
+        this.jwtUtil=jwtUtil;
     }
 
     /*
@@ -46,13 +52,14 @@ public class ClientController {
     @throws WalletException If the credentials do not match or user is not found
     */
     @PostMapping("/login")
-    public ApiResponse login(@RequestBody AuthRequest request, HttpSession session) throws WalletException {
+    public ApiResponse login(@RequestBody AuthRequest request) throws WalletException {
         Client client = service.verifyLogin(request.getUsername(), request.getPassword());
 
-        // Save user identifying data securely in server memory
-        session.setAttribute("user", client.getUsername());
+        String token= jwtUtil.generateToken(client.getUsername());
+        Map<String,Object> data=new HashMap<>();
+        data.put("token",token);
 
-        return new ApiResponse(Status.Success, "Logged in successfully", client);
+        return new ApiResponse(Status.Success, "Logged in successfully", data, client);
     }
 
     /*
@@ -62,10 +69,8 @@ public class ClientController {
     @return An API response indicating successful logout status
     */
     @PostMapping("/logout")
-    public ApiResponse logout(HttpSession session) {
-        // Instantly invalidates the active session cookie for explicit testing
-        session.invalidate();
-        return new ApiResponse(Status.Success, "Logged out successfully", null);
+    public ApiResponse logout() {
+        return new ApiResponse(Status.Success, "Logged out successfully (Delete token on client side)", null);
     }
 
     /*
@@ -80,13 +85,10 @@ public class ClientController {
     public ApiResponse processTransaction(
             @RequestParam Double amount,
             @RequestParam String type,
-            HttpSession session) throws WalletException {
+            @RequestHeader(value = "Authorization", required = false) String authHeader) throws WalletException {
 
-        // 1. Verify the active session
-        String sessionUser = (String) session.getAttribute("user");
-        if (sessionUser == null) {
-            throw new WalletException("ERR_UNAUTHORIZED", "Active session not found. Please log in first.");
-        }
+        // 1. Verify the active session via JWT
+        String sessionUser = jwtUtil.validateHeaderAndExtractUsername(authHeader);
 
         Client updatedClient;
 
@@ -111,11 +113,8 @@ public class ClientController {
     throws WalletException if authentication fails
     */
     @GetMapping("/balance")
-    public ApiResponse getBalance(HttpSession session) throws WalletException {
-        String sessionUser = (String) session.getAttribute("user");
-        if (sessionUser == null) {
-            throw new WalletException("ERR_UNAUTHORIZED", "Active session not found. Please log in first.");
-        }
+    public ApiResponse getBalance(@RequestHeader(value = "Authorization", required = false) String authHeader) throws WalletException {
+        String sessionUser = jwtUtil.validateHeaderAndExtractUsername(authHeader);
         final Client client = service.getClientByUsername(sessionUser);
         return new ApiResponse(Status.Success, "Balance retrieved successfully", client);
     }
