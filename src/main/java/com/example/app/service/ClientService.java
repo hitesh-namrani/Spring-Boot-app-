@@ -4,6 +4,7 @@ import com.example.app.entity.Client;
 import com.example.app.dao.ClientRepository;
 import com.example.app.exception.WalletException;
 import com.example.app.logger.AppLogger;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 /*
 Service class is responsible for handling all client-related operations
@@ -15,9 +16,11 @@ public class ClientService {
 
     private final ClientRepository repository;
     private final AppLogger logger;
-    ClientService(ClientRepository repository,AppLogger logger) {
+    private final BCryptPasswordEncoder passwordEncoder;
+    ClientService(ClientRepository repository,AppLogger logger,BCryptPasswordEncoder passwordEncoder) {
         this.repository = repository;
         this.logger=logger;
+        this.passwordEncoder=passwordEncoder;
     }
 
 
@@ -33,8 +36,10 @@ public class ClientService {
             throw new WalletException("ERR_USER_EXISTS", "Username is already taken!");
         }
 
-        // Create a new client with the provided credentials.
-        final Client client = new Client(username, rawPassword);
+        String hashedPassword = passwordEncoder.encode(rawPassword);
+
+        // Create a new client with hashed credentials.
+        final Client client = new Client(username, hashedPassword);
 
         // Log successful registration.
         logger.logTransaction(username, "REGISTER", 0.0);
@@ -60,7 +65,7 @@ public class ClientService {
                 });
 
         // Validate the password.
-        if (!client.checkPassword(password)) {
+        if (!passwordEncoder.matches(password, client.getPassword())) {
             logger.logError("LOGIN", "Incorrect password for '" + username + "'.");
             throw new WalletException("ERR_WRONG_PASSWORD", "Incorrect password!");
         }

@@ -38,7 +38,7 @@ public class Client {
     }
     
     /*
-    Creates a new client with the specified username and password.
+    Creates a new client with the specified username and hashed password.
     The initial account balance is set to 0.0.
     */
 
@@ -46,13 +46,5 @@ public class Client {
         this.username = username;
         this.password = password;
         this.balance = 0.0;
-    }
-    /*
-    Verifies whether the provided password matches the stored password.
-    return true if the password matches, else return false.
-    */
-
-    public boolean checkPassword(String inputPassword) {
-        return this.password.equals(inputPassword);
     }
 }
