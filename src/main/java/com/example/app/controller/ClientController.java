@@ -1,17 +1,17 @@
 package com.example.app.controller;
 
-import com.example.app.dto.AuthRequest;
-import com.example.app.dto.Status;
-import com.example.app.dto.TransactionType;
+import com.example.app.dto.*;
 import com.example.app.entity.Client;
+import com.example.app.entity.Transactions;
 import com.example.app.exception.WalletException;
 import com.example.app.service.ClientService;
 import com.example.app.util.JwtUtil;
 import org.springframework.web.bind.annotation.*;
-import com.example.app.dto.ApiResponse;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 /*
 REST controller that provides API endpoints for client account operations
 such as registration, deposit, withdrawal, and balance inquiry.
@@ -89,7 +89,7 @@ public class ClientController {
         Client updatedClient;
 
         updatedClient = service.processTransaction(sessionUser, amount,type);
-        return new ApiResponse(Status.Success, String.valueOf(type)+" successful", updatedClient);
+        return new ApiResponse(Status.Success, type+" successful", updatedClient);
     }
 
     /*
@@ -102,5 +102,18 @@ public class ClientController {
         String sessionUser = jwtUtil.validateHeaderAndExtractUsername(authHeader);
         final Client client = service.getClientByUsername(sessionUser);
         return new ApiResponse(Status.Success, "Balance retrieved successfully", client);
+    }
+
+    @GetMapping("/history")
+    public ApiResponse getHistory(@RequestHeader(value = "Authorization", required = false) String authHeader) throws WalletException {
+        String sessionUser = jwtUtil.validateHeaderAndExtractUsername(authHeader);
+        Client client = service.getClientByUsername(sessionUser);
+        List<Transactions> history=service.getTransactionHistory(sessionUser);
+        List<TransactionResponse> historyDto = history.stream()
+                .map(TransactionResponse::new)
+                .collect(Collectors.toList());
+        Map<String, Object> responseData = new HashMap<>();
+        responseData.put("history", historyDto);
+        return new ApiResponse(Status.Success, "Transaction history retrieved successfully",responseData,client);
     }
 }
