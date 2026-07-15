@@ -1,5 +1,6 @@
 package com.example.app.service;
 
+import com.example.app.dto.TransactionType;
 import com.example.app.entity.Client;
 import com.example.app.dao.ClientRepository;
 import com.example.app.exception.WalletException;
@@ -13,7 +14,6 @@ such as registration, authentication, deposits, and withdrawals.
 
 @Service
 public class ClientService {
-
     private final ClientRepository repository;
     private final AppLogger logger;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -82,58 +82,36 @@ public class ClientService {
     Deposits money into the client's wallet.
     @param username Client username
     @param amount   Amount to deposit
+    @param type     Transaction type
     return Updated client object
     throws WalletException if the amount is invalid or authentication fails
     */
 
-    public Client processDeposit(String username, Double amount) throws WalletException {
-        // Deposit amount must be positive.
+    public Client processTransaction(String username, Double amount, TransactionType type) throws WalletException {
+        //amount must be positive.
         if (amount <= 0) {
-            logger.logError("DEPOSIT", "Attempted invalid deposit amount: " + amount);
+            logger.logError(String.valueOf(type), "Invalid amount: " + amount);
             throw new WalletException("ERR_INVALID_AMOUNT", "Amount must be greater than zero.");
         }
 
         // get client via username.
         final Client client = getClientByUsername(username);
-        // Add the amount to the current balance.
-        client.setBalance(client.getBalance() + amount);
 
+        if(type==TransactionType.Deposit) {
+            client.setBalance(client.getBalance() + amount);
+        }
+        else if(type==TransactionType.Withdraw) {
+            if (client.getBalance() < amount) {
+                logger.logError(String.valueOf(type), "Insufficient funds for '" + username + "'.");
+                throw new WalletException("ERR_INSUFFICIENT_FUNDS", "Insufficient funds!");
+            }
+
+            // Deduct the withdrawal amount.
+            client.setBalance(client.getBalance() - amount);
+        }
         // Record the transaction.
-        logger.logTransaction(username, "DEPOSIT", amount);
-
+        logger.logTransaction(username, String.valueOf(type), amount);
         // Save the updated balance.
-        return repository.save(client);
-    }
-
-    /*
-    Withdraws money from the client's wallet.
-    @param username Client username
-    @param amount   Amount to withdraw
-    return Updated client object
-    throws WalletException if the amount is invalid, authentication fails, or insufficient balance is available
-    */
-    public Client processWithdraw(String username, Double amount) throws WalletException {
-        final String WITHDRAWAL = "WITHDRAWAL";
-        // Withdrawal amount must be positive.
-        if (amount <= 0) {
-            logger.logError(WITHDRAWAL, "Attempted invalid withdrawal amount: " + amount);
-            throw new WalletException("ERR_INVALID_AMOUNT", "Amount must be greater than zero.");
-        }
-
-        // get client by username.
-        final Client client = getClientByUsername(username);
-
-        // Ensure sufficient balance before withdrawal.
-        if (client.getBalance() < amount) {
-            logger.logError(WITHDRAWAL, "Insufficient funds for '" + username + "'.");
-            throw new WalletException("ERR_INSUFFICIENT_FUNDS", "Insufficient funds!");
-        }
-
-        // Deduct the withdrawal amount.
-        client.setBalance(client.getBalance() - amount);
-
-        // Log the successful transaction.
-        logger.logTransaction(username, WITHDRAWAL, amount);
         return repository.save(client);
     }
 }

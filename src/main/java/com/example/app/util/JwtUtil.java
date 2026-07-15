@@ -35,7 +35,7 @@ public class JwtUtil {
                 .compact();
     }
 
-    // Validates the math on the signature and extracts the username
+    // Validates the match on the signature and extracts the username
     public String extractUsername(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(key)

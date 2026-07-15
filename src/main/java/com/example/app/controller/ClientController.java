@@ -2,13 +2,13 @@ package com.example.app.controller;
 
 import com.example.app.dto.AuthRequest;
 import com.example.app.dto.Status;
+import com.example.app.dto.TransactionType;
 import com.example.app.entity.Client;
 import com.example.app.exception.WalletException;
 import com.example.app.service.ClientService;
 import com.example.app.util.JwtUtil;
 import org.springframework.web.bind.annotation.*;
 import com.example.app.dto.ApiResponse;
-import jakarta.servlet.http.HttpSession;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -47,7 +47,6 @@ public class ClientController {
 
     @param username The client's unique username credential
     @param password The client's account password credential
-    @param session  The current HTTP session context to persist state
     @return An API response containing the logged-in client details
     @throws WalletException If the credentials do not match or user is not found
     */
@@ -64,8 +63,6 @@ public class ClientController {
 
     /*
     Terminate the client session and clear tracking details.
-
-    @param session The active HTTP session to be invalidated
     @return An API response indicating successful logout status
     */
     @PostMapping("/logout")
@@ -76,35 +73,23 @@ public class ClientController {
     /*
     Processes a financial transaction (deposit or withdrawal) for the authenticated client.
     @param amount  The amount of money to transact
-    @param type    The kind of transaction to perform (must be "deposit" or "withdraw")
-    @param session The active HTTP session verifying the user's identity
+    @param type    The kind of transaction to perform (must be "Deposit" or "Withdraw")
     return an API response containing the transaction status and updated client details
     @throws WalletException if the session is unauthorized, the transaction type is unrecognized, or the amount/balance is invalid
     */
     @PostMapping("/transaction")
     public ApiResponse processTransaction(
             @RequestParam Double amount,
-            @RequestParam String type,
+            @RequestParam TransactionType type,
             @RequestHeader(value = "Authorization", required = false) String authHeader) throws WalletException {
 
-        // 1. Verify the active session via JWT
+        // Verify the active session via JWT
         String sessionUser = jwtUtil.validateHeaderAndExtractUsername(authHeader);
 
         Client updatedClient;
 
-        // 2. Route the request based on the 'type' parameter
-        if ("deposit".equalsIgnoreCase(type)) {
-            updatedClient = service.processDeposit(sessionUser, amount);
-            return new ApiResponse(Status.Success, "Deposit successful", updatedClient);
-
-        } else if ("withdraw".equalsIgnoreCase(type)) {
-            updatedClient = service.processWithdraw(sessionUser, amount);
-            return new ApiResponse(Status.Success, "Withdrawal successful", updatedClient);
-
-        } else {
-            // 3. Handle invalid transaction types gracefully
-            throw new WalletException("ERR_INVALID_TYPE", "Transaction type must be either 'deposit' or 'withdraw'.");
-        }
+        updatedClient = service.processTransaction(sessionUser, amount,type);
+        return new ApiResponse(Status.Success, String.valueOf(type)+" successful", updatedClient);
     }
 
     /*

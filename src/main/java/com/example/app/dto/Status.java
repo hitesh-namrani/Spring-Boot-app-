@@ -6,7 +6,7 @@ import lombok.Getter;
 public enum Status {
     Success("Success"),
     Failed("Failed");
-    private String status;
+    private final String status;
     Status(String status) {
         this.status = status;
     }
