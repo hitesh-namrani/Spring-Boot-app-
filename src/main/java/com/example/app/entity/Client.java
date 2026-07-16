@@ -28,7 +28,9 @@ public class Client {
     private String password;
 
     //Current account balance of the client.
-    private Double balance;
+    private Double mainBalance;
+
+    private Double voucherBalance;
 
     /*
     Default constructor required by JPA.
@@ -45,6 +47,7 @@ public class Client {
     public Client(String username, String password) {
         this.username = username;
         this.password = password;
-        this.balance = 0.0;
+        this.mainBalance = 0.0;
+        this.voucherBalance=0.0;
     }
 }

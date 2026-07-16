@@ -6,9 +6,11 @@ import lombok.Getter;
 @Getter
 public class ClientResponse {
     private final String username;
-    private final double balance;
+    private final double mainBalance;
+    private final double voucherBalance;
     ClientResponse(Client c){
         this.username=c.getUsername();
-        this.balance=c.getBalance();
+        this.mainBalance=c.getMainBalance();
+        this.voucherBalance=c.getVoucherBalance();
     }
 }

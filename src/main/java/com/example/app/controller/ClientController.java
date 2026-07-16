@@ -80,7 +80,8 @@ public class ClientController {
     @PostMapping("/transaction")
     public ApiResponse processTransaction(
             @RequestParam Double amount,
-            @RequestParam TransactionType type,
+            @RequestParam TransactionType transactionType,
+            @RequestParam(required = false) BalanceType balanceType,
             @RequestHeader(value = "Authorization", required = false) String authHeader) throws WalletException {
 
         // Verify the active session via JWT
@@ -88,8 +89,8 @@ public class ClientController {
 
         Client updatedClient;
 
-        updatedClient = service.processTransaction(sessionUser, amount,type);
-        return new ApiResponse(Status.Success, type+" successful", updatedClient);
+        updatedClient = service.processTransaction(sessionUser, amount,transactionType,balanceType);
+        return new ApiResponse(Status.Success, transactionType+" successful", updatedClient);
     }
 
     /*
@@ -101,7 +102,8 @@ public class ClientController {
     public ApiResponse getBalance(@RequestHeader(value = "Authorization", required = false) String authHeader) throws WalletException {
         String sessionUser = jwtUtil.validateHeaderAndExtractUsername(authHeader);
         final Client client = service.getClientByUsername(sessionUser);
-        return new ApiResponse(Status.Success, "Balance retrieved successfully", client);
+        Map<String,Object> data=service.limits(sessionUser);
+        return new ApiResponse(Status.Success, "Balance retrieved successfully",data, client);
     }
 
     @GetMapping("/history")

@@ -1,5 +1,6 @@
 package com.example.app.entity;
 
+import com.example.app.dto.BalanceType;
 import com.example.app.dto.Status;
 import com.example.app.dto.TransactionType;
 import jakarta.persistence.*;
@@ -29,7 +30,11 @@ public class Transactions {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TransactionType type;
+    private TransactionType transactionType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private BalanceType balanceType;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -40,10 +45,11 @@ public class Transactions {
         this.timestamp = Instant.now();
     }
 
-    public Transactions(long clientId, Double amount, TransactionType type, Status status) {
+    public Transactions(long clientId, Double amount, TransactionType transactionType,BalanceType balanceType, Status status) {
         this.clientId = clientId;
         this.amount = amount;
-        this.type = type;
+        this.transactionType = transactionType;
+        this.balanceType=balanceType;
         this.status = status;
     }
 
