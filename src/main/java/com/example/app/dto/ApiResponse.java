@@ -47,7 +47,7 @@ public class ApiResponse {
     private String message;
 
     //hashmap to provide data
-    private Map<String,Object> data;
+    private Map<String, Object> data;
 
     // Client data returned in the response
     private ClientResponse client;
@@ -59,10 +59,10 @@ public class ApiResponse {
         this.client = client != null ? new ClientResponse(client) : null;
     }
 
-    public ApiResponse(Status status, String message,Map<String,Object> data, Client client) {
+    public ApiResponse(Status status, String message, Map<String, Object> data, Client client) {
         this.status = status;
         this.message = message;
-        this.data=data;
+        this.data = data;
         this.client = client != null ? new ClientResponse(client) : null;
     }
 }

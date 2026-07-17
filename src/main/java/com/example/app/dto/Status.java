@@ -4,9 +4,10 @@ import lombok.Getter;
 
 @Getter
 public enum Status {
-    Success("Success"),
-    Failed("Failed");
+    SUCCESS("Success"),
+    FAILED("Failed");
     private final String status;
+
     Status(String status) {
         this.status = status;
     }

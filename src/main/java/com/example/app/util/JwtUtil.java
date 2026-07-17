@@ -18,14 +18,14 @@ public class JwtUtil {
 
     private final SecretKey key;
 
-    // Token validity (e.g., 10 minutes = 1000ms * 60s * 10m)
-    private static final long EXPIRATION_TIME = 1000 * 60 * 10;
+    // Defines the JWT token expiration duration.
+    private static final long EXPIRATION_TIME = (long) 1000 * 60 * 10;
 
     public JwtUtil(@Value("${jwt.secret}") String secretString) {
         this.key = Keys.hmacShaKeyFor(secretString.getBytes());
     }
 
-    // Generates a token containing the username
+    // Generates a JWT token containing the client's username.
     public String generateToken(String username) {
         return Jwts.builder()
                 .subject(username)
@@ -35,7 +35,7 @@ public class JwtUtil {
                 .compact();
     }
 
-    // Validates the match on the signature and extracts the username
+    // Extracts the username from a valid JWT token.
     public String extractUsername(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(key)
@@ -45,7 +45,7 @@ public class JwtUtil {
         return claims.getSubject();
     }
 
-    //Extracts the token from the header and validates it
+    // Validates the authorization header and returns the authenticated username.
     public String validateHeaderAndExtractUsername(String authHeader) throws WalletException {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new com.example.app.exception.WalletException("ERR_UNAUTHORIZED", "Missing or invalid Authorization header.");
@@ -56,7 +56,7 @@ public class JwtUtil {
             String token = authHeader.substring(7);
             return extractUsername(token);
         } catch (Exception e) {
-            // If the math fails, or the token is expired, JJWT throws an exception
+            // Handles expired or invalid JWT tokens.
             throw new com.example.app.exception.WalletException("ERR_UNAUTHORIZED", "Token is expired or invalid. Please log in again.");
         }
     }

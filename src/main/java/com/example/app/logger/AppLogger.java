@@ -26,13 +26,13 @@ public class AppLogger {
         // Record transaction details at INFO level.
         logger.info("TRANSACTION | User: {} | Action: {} | Amount: {}", username, action, amount);
     }
+
     /*
     Logs application errors.
     @param action       Operation during which the error occurred
     @param errorMessage Description of the error
     */
     public void logError(String action, String errorMessage) {
-        // Record error details at ERROR level.
         logger.error("ERROR | Action: {} | Reason: {}", action, errorMessage);
     }
 }

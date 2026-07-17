@@ -14,22 +14,23 @@ Stores the client's login credentials and account balance.
 @Setter
 public class Client {
 
-    //New Auto-Incrementing Primary Key
+    //Auto-Incrementing Primary Key
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //Username is no longer @Id, but it MUST be unique and not null
+    //Unique username used for authentication.
     @Column(unique = true, nullable = false)
     private String username;
 
-    //Password excluded from JSON responses for security.
+    // Stores the client's hashed password and excludes it from JSON responses.
     @JsonIgnore
     private String password;
 
-    //Current account balance of the client.
+    // Current main wallet balance.
     private Double mainBalance;
 
+    // Current main wallet balance.
     private Double voucherBalance;
 
     /*
@@ -48,6 +49,6 @@ public class Client {
         this.username = username;
         this.password = password;
         this.mainBalance = 0.0;
-        this.voucherBalance=0.0;
+        this.voucherBalance = 0.0;
     }
 }

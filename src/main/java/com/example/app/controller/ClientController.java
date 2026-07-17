@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 /*
 REST controller that provides API endpoints for client account operations
 such as registration, deposit, withdrawal, and balance inquiry.
@@ -23,58 +22,62 @@ public class ClientController {
 
     //Service layer responsible for handling client-related business logic.
     private final ClientService service;
+    //Utility class for generating and validating JWT tokens.
     private final JwtUtil jwtUtil;
 
-    ClientController(ClientService service,JwtUtil jwtUtil){
-        this.service=service;
-        this.jwtUtil=jwtUtil;
+    ClientController(ClientService service, JwtUtil jwtUtil) {
+        this.service = service;
+        this.jwtUtil = jwtUtil;
     }
 
     /*
     Registers a new client account.
-    return an API response containing the newly created client
+    @param request contains the username and password for the new client
+    @return an API response containing the newly created client
     @throws WalletException if the username already exists or registration fails
     */
 
     @PostMapping("/register")
     public ApiResponse register(@RequestBody AuthRequest request) throws WalletException {
         final Client newClient = service.registerClient(request.getUsername(), request.getPassword());
-        return new ApiResponse(Status.Success, "Account created successfully", newClient);
+        return new ApiResponse(Status.SUCCESS, "Account created successfully", newClient);
     }
 
     /*
     Authenticates a client and initializes a secure session.
 
-    @param username The client's unique username credential
-    @param password The client's account password credential
-    @return An API response containing the logged-in client details
+    @param request contains the client's login credentials
+    @return API response containing the JWT token and authenticated client details
     @throws WalletException If the credentials do not match or user is not found
     */
     @PostMapping("/login")
     public ApiResponse login(@RequestBody AuthRequest request) throws WalletException {
         Client client = service.verifyLogin(request.getUsername(), request.getPassword());
 
-        String token= jwtUtil.generateToken(client.getUsername());
-        Map<String,Object> data=new HashMap<>();
-        data.put("token",token);
+        String token = jwtUtil.generateToken(client.getUsername());
+        Map<String, Object> data = new HashMap<>();
+        data.put("token", token);
 
-        return new ApiResponse(Status.Success, "Logged in successfully", data, client);
+        return new ApiResponse(Status.SUCCESS, "Logged in successfully", data, client);
     }
 
     /*
-    Terminate the client session and clear tracking details.
+    Since authentication is stateless using JWT, the server does not invalidate the token.
+    The client is responsible for deleting the stored token.
     @return An API response indicating successful logout status
     */
     @PostMapping("/logout")
     public ApiResponse logout() {
-        return new ApiResponse(Status.Success, "Logged out successfully (Delete token on client side)", null);
+        return new ApiResponse(Status.SUCCESS, "Logged out successfully (Delete token on client side)", null);
     }
 
     /*
     Processes a financial transaction (deposit or withdrawal) for the authenticated client.
-    @param amount  The amount of money to transact
-    @param type    The kind of transaction to perform (must be "Deposit" or "Withdraw")
-    return an API response containing the transaction status and updated client details
+    @param amount The amount of money to transact
+    @param transactionType type of transaction (Deposit or Withdraw)
+    @param balanceType optional wallet balance type (if applicable)
+    @param authHeader JWT authorization header in the format "Bearer &lt;token&gt;"
+    @return an API response containing the transaction status and updated client details
     @throws WalletException if the session is unauthorized, the transaction type is unrecognized, or the amount/balance is invalid
     */
     @PostMapping("/transaction")
@@ -89,33 +92,41 @@ public class ClientController {
 
         Client updatedClient;
 
-        updatedClient = service.processTransaction(sessionUser, amount,transactionType,balanceType);
-        return new ApiResponse(Status.Success, transactionType+" successful", updatedClient);
+        updatedClient = service.processTransaction(sessionUser, amount, transactionType, balanceType);
+        return new ApiResponse(Status.SUCCESS, transactionType + " successful", updatedClient);
     }
 
     /*
-    Retrieves the current wallet balance for the authenticated client.
-    return an API response containing the client's current balance
-    throws WalletException if authentication fails
+    Retrieves the current wallet balances and transaction limits for the authenticated client.
+    @param authHeader JWT authorization header
+    @return an API response containing the client's current balance
+    @throws WalletException if authentication fails
     */
     @GetMapping("/balance")
     public ApiResponse getBalance(@RequestHeader(value = "Authorization", required = false) String authHeader) throws WalletException {
         String sessionUser = jwtUtil.validateHeaderAndExtractUsername(authHeader);
         final Client client = service.getClientByUsername(sessionUser);
-        Map<String,Object> data=service.limits(sessionUser);
-        return new ApiResponse(Status.Success, "Balance retrieved successfully",data, client);
+        Map<String, Object> data = service.limits(sessionUser);
+        return new ApiResponse(Status.SUCCESS, "Balance retrieved successfully", data, client);
     }
 
+    /*
+    Retrieves the transaction history of the authenticated client.
+
+    @param authHeader JWT authorization header
+    @return API response containing the client's transaction history
+    @throws WalletException if authentication fails
+    */
     @GetMapping("/history")
     public ApiResponse getHistory(@RequestHeader(value = "Authorization", required = false) String authHeader) throws WalletException {
         String sessionUser = jwtUtil.validateHeaderAndExtractUsername(authHeader);
         Client client = service.getClientByUsername(sessionUser);
-        List<Transactions> history=service.getTransactionHistory(sessionUser);
+        List<Transactions> history = service.getTransactionHistory(sessionUser);
         List<TransactionResponse> historyDto = history.stream()
                 .map(TransactionResponse::new)
-                .collect(Collectors.toList());
+                .toList();
         Map<String, Object> responseData = new HashMap<>();
         responseData.put("history", historyDto);
-        return new ApiResponse(Status.Success, "Transaction history retrieved successfully",responseData,client);
+        return new ApiResponse(Status.SUCCESS, "Transaction history retrieved successfully", responseData, client);
     }
 }

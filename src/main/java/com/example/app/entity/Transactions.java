@@ -10,46 +10,56 @@ import lombok.Setter;
 
 import java.time.Instant;
 
+//Represents a wallet transaction record.
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 public class Transactions {
+    // Unique identifier for the transaction.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long transactionId;
 
+    // Identifier of the client associated with this transaction.
     @Column(nullable = false)
     private long clientId;//Foreign key from Client entity
 
-    @Column(nullable = false,updatable = false)
+    // Time when the transaction was created.
+    @Column(nullable = false, updatable = false)
     private Instant timestamp;
 
+    // Amount involved in the transaction.
     @Column(nullable = false)
     private Double amount;
 
+    // Type of transaction performed.
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TransactionType transactionType;
 
+    // Balance category affected by the transaction.
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private BalanceType balanceType;
 
+    // Result status of the transaction.
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Status status;
 
+    // Automatically sets the transaction timestamp before saving.
     @PrePersist
     protected void onCreate() {
         this.timestamp = Instant.now();
     }
 
-    public Transactions(long clientId, Double amount, TransactionType transactionType,BalanceType balanceType, Status status) {
+    // Creates a transaction record with the provided details.
+    public Transactions(long clientId, Double amount, TransactionType transactionType, BalanceType balanceType, Status status) {
         this.clientId = clientId;
         this.amount = amount;
         this.transactionType = transactionType;
-        this.balanceType=balanceType;
+        this.balanceType = balanceType;
         this.status = status;
     }
 

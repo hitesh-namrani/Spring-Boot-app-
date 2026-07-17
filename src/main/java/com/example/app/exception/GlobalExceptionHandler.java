@@ -32,7 +32,7 @@ public class GlobalExceptionHandler {
         Map<String, String> errorResponse = new HashMap<>();
 
         // Injecting your custom error code and the readable message
-        errorResponse.put("status", String.valueOf(Status.Failed));
+        errorResponse.put("status", String.valueOf(Status.FAILED));
         errorResponse.put("errorCode", ex.getErrorCode());
         errorResponse.put("errorMessage", ex.getMessage());
 

@@ -13,12 +13,13 @@ public class TransactionResponse {
     private final TransactionType transactionType;
     private final BalanceType balanceType;
     private final Status status;
+
     public TransactionResponse(Transactions transaction) {
         this.transactionId = transaction.getTransactionId();
         this.timestamp = transaction.getTimestamp();
         this.amount = transaction.getAmount();
         this.transactionType = transaction.getTransactionType();
-        this.balanceType=transaction.getBalanceType();
+        this.balanceType = transaction.getBalanceType();
         this.status = transaction.getStatus();
     }
 }

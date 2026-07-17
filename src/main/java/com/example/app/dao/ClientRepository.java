@@ -26,7 +26,7 @@ No implementation is required because Spring Data JPA
 automatically generates it at runtime.
 
 Client  -> Entity class
-String  -> Data type of the primary key (ID)
+Long  -> Data type of the primary key (ID)
 */
 public interface ClientRepository extends JpaRepository<Client, Long> {
     Optional<Client> findByUsername(String username);
