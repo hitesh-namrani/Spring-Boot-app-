@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet</title>
+</head>
+
+<body style="margin:0;font-family:Arial,sans-serif;background:#f5f7f9;">
+
+<!-- Header -->
+<div style="background:#00A651;color:white;padding:18px 25px;font-size:24px;font-weight:bold;">
+    Wallet
+</div>
+
+<div style="max-width:1100px;margin:20px auto;padding:10px;">
+
+    <!-- Register & Login -->
+    <div style="display:flex;gap:20px;flex-wrap:wrap;">
+
+        <!-- Register -->
+        <div style="background:white;padding:20px;border-radius:10px;flex:1;min-width:300px;box-shadow:0 2px 8px rgba(0,0,0,0.1)">
+            <h3 style="color:#00A651;">Register</h3>
+
+            <input id="regUsername"
+                   type="text"
+                   placeholder="Username"
+                   style="width:100%;padding:10px;margin-bottom:10px;border:1px solid #ccc;border-radius:5px;box-sizing:border-box;">
+
+            <input id="regPassword"
+                   type="password"
+                   placeholder="Password"
+                   style="width:100%;padding:10px;margin-bottom:10px;border:1px solid #ccc;border-radius:5px;box-sizing:border-box;">
+
+            <button onclick="register()"
+                    style="background:#00A651;color:white;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;">
+                Register
+            </button>
+        </div>
+
+        <!-- Login -->
+        <div style="background:white;padding:20px;border-radius:10px;flex:1;min-width:300px;box-shadow:0 2px 8px rgba(0,0,0,0.1)">
+            <h3 style="color:#00A651;">Login</h3>
+
+            <input id="loginUsername"
+                   type="text"
+                   placeholder="Username"
+                   style="width:100%;padding:10px;margin-bottom:10px;border:1px solid #ccc;border-radius:5px;box-sizing:border-box;">
+
+            <input id="loginPassword"
+                   type="password"
+                   placeholder="Password"
+                   style="width:100%;padding:10px;margin-bottom:10px;border:1px solid #ccc;border-radius:5px;box-sizing:border-box;">
+
+            <button onclick="login()"
+                    style="background:#00A651;color:white;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;">
+                Login
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Dashboard -->
+    <div style="background:white;padding:20px;margin-top:20px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.1)">
+
+        <h2 style="color:#00A651;">Wallet Dashboard</h2>
+
+        <button onclick="getBalance()"
+                style="background:#00A651;color:white;border:none;padding:10px 15px;border-radius:5px;cursor:pointer;">
+            Refresh Balance
+        </button>
+
+        <button onclick="getHistory()"
+                style="background:#006B3F;color:white;border:none;padding:10px 15px;border-radius:5px;cursor:pointer;">
+            Transaction History
+        </button>
+
+        <button onclick="logout()"
+                style="background:#ff4d4f;color:white;border:none;padding:10px 15px;border-radius:5px;float:right;cursor:pointer;">
+            Logout
+        </button>
+
+    </div>
+
+    <!-- Transaction -->
+    <div style="background:white;padding:20px;margin-top:20px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.1)">
+
+        <h3 style="color:#00A651;">Transaction</h3>
+
+        <input id="amount"
+               type="number"
+               placeholder="Amount"
+               style="padding:10px;width:200px;border:1px solid #ccc;border-radius:5px;">
+
+        <select id="type"
+                onchange="toggleBalanceType()"
+                style="padding:10px;border:1px solid #ccc;border-radius:5px;">
+            <option value="DEPOSIT">Deposit</option>
+            <option value="WITHDRAW">Withdraw</option>
+        </select>
+
+        <span id="balanceTypeContainer">
+            <select id="balanceType"
+                    style="padding:10px;border:1px solid #ccc;border-radius:5px;">
+                <option value="MAIN">Main</option>
+                <option value="VOUCHER">Voucher</option>
+            </select>
+        </span>
+
+        <button onclick="makeTransaction()"
+                style="background:#00A651;color:white;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;">
+            Submit
+        </button>
+
+    </div>
+
+    <!-- ONLY RESPONSE SECTION -->
+    <div style="background:white;padding:20px;margin-top:20px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.1)">
+
+        <h3 style="color:#00A651;">Response</h3>
+
+        <pre id="output"
+             style="margin:0;white-space:pre-wrap;word-wrap:break-word;max-height:400px;overflow:auto;"></pre>
+
+    </div>
+
+</div>
+
+<script>
+
+    const BASE_URL = "http://localhost:8080/api/clients";
+    let token = localStorage.getItem("token") || "";
+
+    function show(data) {
+        document.getElementById("output").textContent =
+            JSON.stringify(data, null, 2);
+    }
+
+    function toggleBalanceType() {
+
+        const type = document.getElementById("type").value;
+        const container = document.getElementById("balanceTypeContainer");
+
+        if (type === "WITHDRAW") {
+            container.style.display = "none";
+        } else {
+            container.style.display = "inline-block";
+        }
+    }
+
+    window.onload = function () {
+        toggleBalanceType();
+    };
+
+    async function register() {
+
+        const body = {
+            username: document.getElementById("regUsername").value,
+            password: document.getElementById("regPassword").value
+        };
+
+        try {
+
+            const res = await fetch(BASE_URL + "/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(body)
+            });
+
+            const data = await res.json();
+            show(data);
+
+        } catch (err) {
+            show({ error: err.message });
+        }
+    }
+
+    async function login() {
+
+        const body = {
+            username: document.getElementById("loginUsername").value,
+            password: document.getElementById("loginPassword").value
+        };
+
+        try {
+
+            const res = await fetch(BASE_URL + "/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(body)
+            });
+
+            const data = await res.json();
+
+            token = data?.data?.token || data?.token || "";
+            localStorage.setItem("token", token);
+
+            show(data);
+
+        } catch (err) {
+            show({ error: err.message });
+        }
+    }
+
+    async function getBalance() {
+
+        try {
+
+            const res = await fetch(BASE_URL + "/balance", {
+                headers: {
+                    Authorization: "Bearer " + token
+                }
+            });
+
+            const data = await res.json();
+
+            show(data);
+
+        } catch (err) {
+            show({ error: err.message });
+        }
+    }
+
+    async function makeTransaction() {
+
+        const amount = document.getElementById("amount").value;
+        const type = document.getElementById("type").value;
+
+        if (!amount || amount <= 0) {
+            show({ error: "Enter a valid amount" });
+            return;
+        }
+
+        let url =
+            `${BASE_URL}/transaction?amount=${amount}&transactionType=${type}`;
+
+        if (type === "DEPOSIT") {
+            const balanceType =
+                document.getElementById("balanceType").value;
+
+            url += `&balanceType=${balanceType}`;
+        }
+
+        try {
+
+            const res = await fetch(url, {
+                method: "POST",
+                headers: {
+                    Authorization: "Bearer " + token
+                }
+            });
+
+            const data = await res.json();
+
+            show(data);
+
+        } catch (err) {
+            show({ error: err.message });
+        }
+    }
+
+    async function getHistory() {
+
+        try {
+
+            const res = await fetch(BASE_URL + "/history", {
+                headers: {
+                    Authorization: "Bearer " + token
+                }
+            });
+
+            const data = await res.json();
+
+            show(data);
+
+        } catch (err) {
+            show({ error: err.message });
+        }
+    }
+
+    async function logout() {
+
+        try {
+
+            const res = await fetch(BASE_URL + "/logout", {
+                method: "POST"
+            });
+
+            const data = await res.json();
+
+            localStorage.removeItem("token");
+            token = "";
+
+            show(data);
+
+        } catch (err) {
+            show({ error: err.message });
+        }
+    }
+
+</script>
+
+</body>
+</html>
