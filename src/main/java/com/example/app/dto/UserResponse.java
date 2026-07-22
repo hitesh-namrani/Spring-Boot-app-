@@ -1,15 +1,15 @@
 package com.example.app.dto;
 
-import com.example.app.entity.Client;
+import com.example.app.entity.User;
 import lombok.Getter;
 
 @Getter
-public class ClientResponse {
+public class UserResponse {
     private final String username;
     private final double mainBalance;
     private final double voucherBalance;
 
-    ClientResponse(Client c) {
+    UserResponse(User c) {
         this.username = c.getUsername();
         this.mainBalance = c.getMainBalance();
         this.voucherBalance = c.getVoucherBalance();

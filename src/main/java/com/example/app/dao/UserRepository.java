@@ -1,8 +1,8 @@
 package com.example.app.dao;
 
-// Import the Client entity class
+// Import the User entity class
 
-import com.example.app.entity.Client;
+import com.example.app.entity.User;
 
 // Import JpaRepository to provide built-in CRUD operations
 import jakarta.persistence.LockModeType;
@@ -13,7 +13,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.Optional;
 
 /*
-Repository interface for Client entity.
+Repository interface for User entity.
 
 Extends JpaRepository to inherit standard database operations such as:
 - save()
@@ -25,15 +25,15 @@ Extends JpaRepository to inherit standard database operations such as:
 No implementation is required because Spring Data JPA
 automatically generates it at runtime.
 
-Client  -> Entity class
+User  -> Entity class
 Long  -> Data type of the primary key (ID)
 */
-public interface ClientRepository extends JpaRepository<Client, Long> {
-    Optional<Client> findByUsername(String username);
+public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByUsername(String username);
 
     // Used only inside processTransaction — acquires a row-level write lock
-    // to prevent concurrent transactions from racing on the same client's balance.
+    // to prevent concurrent transactions from racing on the same user's balance.
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT c FROM Client c WHERE c.username = :username")
-    Optional<Client> findByUsernameForUpdate(String username);
+    @Query("SELECT c FROM User c WHERE c.username = :username")
+    Optional<User> findByUsernameForUpdate(String username);
 }
