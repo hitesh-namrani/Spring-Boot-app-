@@ -185,7 +185,7 @@ public class UserService {
         // Save the updated balance.
         return userRepository.save(user);
     }
-    void transfer(User user,User receiver, double amount,BalanceType balanceType){
+    void transfer(User user,User receiver, double amount,BalanceType balanceType) throws WalletException{
         //empty method for implementing transfer functionality
         //Max main transfer limit per day=500
         //Max voucher transfer limit per day=5000
