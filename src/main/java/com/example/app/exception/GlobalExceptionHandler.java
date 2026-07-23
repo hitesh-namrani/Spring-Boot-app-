@@ -11,7 +11,7 @@ import java.util.Map;
 /*
  Global exception handler for the application.
  Intercepts exceptions thrown by controllers and returns
- standardized error responses to the client.
+ standardized error responses to the user.
 */
 
 @ControllerAdvice

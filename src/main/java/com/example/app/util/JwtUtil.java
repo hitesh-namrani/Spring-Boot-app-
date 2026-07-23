@@ -25,7 +25,7 @@ public class JwtUtil {
         this.key = Keys.hmacShaKeyFor(secretString.getBytes());
     }
 
-    // Generates a JWT token containing the client's username.
+    // Generates a JWT token containing the user's username.
     public String generateToken(String username) {
         return Jwts.builder()
                 .subject(username)

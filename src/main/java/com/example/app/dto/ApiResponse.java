@@ -1,8 +1,8 @@
 package com.example.app.dto;
 
-// Import the Client entity
+// Import the User entity
 
-import com.example.app.entity.Client;
+import com.example.app.entity.User;
 
 //import JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -21,7 +21,7 @@ Data Transfer Object (DTO) used to send API responses.
 This class contains:
 - status  : Indicates whether the request was successful or failed.
 - message : Provides additional information about the response.
-- client  : Contains the Client object returned by the API (if applicable).
+- user  : Contains the User object returned by the API (if applicable).
 */
 
 // Generates getter methods for all fields
@@ -49,20 +49,20 @@ public class ApiResponse {
     //hashmap to provide data
     private Map<String, Object> data;
 
-    // Client data returned in the response
-    private ClientResponse client;
+    // User data returned in the response
+    private UserResponse user;
 
     //constructor if no hashmap is needed
-    public ApiResponse(Status status, String message, Client client) {
+    public ApiResponse(Status status, String message, User user) {
         this.status = status;
         this.message = message;
-        this.client = client != null ? new ClientResponse(client) : null;
+        this.user = user != null ? new UserResponse(user) : null;
     }
 
-    public ApiResponse(Status status, String message, Map<String, Object> data, Client client) {
+    public ApiResponse(Status status, String message, Map<String, Object> data, User user) {
         this.status = status;
         this.message = message;
         this.data = data;
-        this.client = client != null ? new ClientResponse(client) : null;
+        this.user = user != null ? new UserResponse(user) : null;
     }
 }

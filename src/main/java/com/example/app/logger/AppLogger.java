@@ -18,7 +18,7 @@ public class AppLogger {
 
     /*
     Logs successful transaction-related activities.
-    @param username Username of the client performing the transaction
+    @param username Username of the user performing the transaction
     @param action   Type of transaction (REGISTER, DEPOSIT, WITHDRAWAL, etc.)
     @param amount   Transaction amount
     */

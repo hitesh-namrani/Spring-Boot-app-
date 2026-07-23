@@ -1,15 +1,15 @@
 package com.example.app;
 
-import com.example.app.dao.ClientRepository;
+import com.example.app.dao.UserRepository;
 import com.example.app.dao.TransactionsRepository;
 import com.example.app.dto.BalanceType;
 import com.example.app.dto.Status;
 import com.example.app.dto.TransactionType;
-import com.example.app.entity.Client;
+import com.example.app.entity.User;
 import com.example.app.entity.Transactions;
 import com.example.app.exception.WalletException;
 import com.example.app.logger.AppLogger;
-import com.example.app.service.ClientService;
+import com.example.app.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,10 +28,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ClientServiceTest {
+class UserServiceTest {
 
     @Mock
-    private ClientRepository clientRepository;
+    private UserRepository userRepository;
 
     @Mock
     private TransactionsRepository transactionsRepository;
@@ -43,53 +43,53 @@ class ClientServiceTest {
     private BCryptPasswordEncoder passwordEncoder;
 
     @InjectMocks
-    private ClientService clientService;
+    private UserService userService;
 
-    private Client client;
+    private User user;
 
     @BeforeEach
     void setUp() {
-        client = new Client("john", "hashedPassword");
-        client.setId(1L);
-        client.setMainBalance(200.0);
-        client.setVoucherBalance(500.0);
+        user = new User("john", "hashedPassword");
+        user.setId(1L);
+        user.setMainBalance(200.0);
+        user.setVoucherBalance(500.0);
     }
 
     // ---------------- REGISTER ----------------
 
     @Test
-    void registerClient_Success() throws Exception {
+    void registerUser_Success() throws Exception {
 
-        when(clientRepository.findByUsername("john"))
+        when(userRepository.findByUsername("john"))
                 .thenReturn(Optional.empty());
 
         when(passwordEncoder.encode("password"))
                 .thenReturn("hashedPassword");
 
-        when(clientRepository.save(any(Client.class)))
+        when(userRepository.save(any(User.class)))
                 .thenAnswer(i -> i.getArgument(0));
 
-        Client saved = clientService.registerClient("john", "password");
+        User saved = userService.registerUser("john", "password");
 
         assertEquals("john", saved.getUsername());
 
-        verify(clientRepository).save(any(Client.class));
+        verify(userRepository).save(any(User.class));
         verify(logger).logTransaction("john", "REGISTER", 0.0);
     }
 
     @Test
-    void registerClient_UserAlreadyExists() {
+    void registerUser_UserAlreadyExists() {
 
-        when(clientRepository.findByUsername("john"))
-                .thenReturn(Optional.of(client));
+        when(userRepository.findByUsername("john"))
+                .thenReturn(Optional.of(user));
 
         WalletException ex = assertThrows(
                 WalletException.class,
-                () -> clientService.registerClient("john", "password"));
+                () -> userService.registerUser("john", "password"));
 
         assertEquals("ERR_USER_EXISTS", ex.getErrorCode());
 
-        verify(clientRepository, never()).save(any());
+        verify(userRepository, never()).save(any());
     }
 
     // ---------------- LOGIN ----------------
@@ -97,29 +97,29 @@ class ClientServiceTest {
     @Test
     void verifyLogin_Success() throws WalletException {
 
-        when(clientRepository.findByUsername("john"))
-                .thenReturn(Optional.of(client));
+        when(userRepository.findByUsername("john"))
+                .thenReturn(Optional.of(user));
 
         when(passwordEncoder.matches("password", "hashedPassword"))
                 .thenReturn(true);
 
-        Client result = clientService.verifyLogin("john", "password");
+        User result = userService.verifyLogin("john", "password");
 
-        assertEquals(client, result);
+        assertEquals(user, result);
     }
 
     @Test
     void verifyLogin_WrongPassword() {
 
-        when(clientRepository.findByUsername("john"))
-                .thenReturn(Optional.of(client));
+        when(userRepository.findByUsername("john"))
+                .thenReturn(Optional.of(user));
 
         when(passwordEncoder.matches(anyString(), anyString()))
                 .thenReturn(false);
 
         WalletException ex = assertThrows(
                 WalletException.class,
-                () -> clientService.verifyLogin("john", "wrong"));
+                () -> userService.verifyLogin("john", "wrong"));
 
         assertEquals("ERR_WRONG_PASSWORD", ex.getErrorCode());
     }
@@ -127,56 +127,57 @@ class ClientServiceTest {
     @Test
     void verifyLogin_UserNotFound() {
 
-        when(clientRepository.findByUsername("john"))
+        when(userRepository.findByUsername("john"))
                 .thenReturn(Optional.empty());
 
         WalletException ex = assertThrows(
                 WalletException.class,
-                () -> clientService.verifyLogin("john", "password"));
+                () -> userService.verifyLogin("john", "password"));
 
-        assertEquals(ClientService.ERR_USER_NOT_FOUND, ex.getErrorCode());
+        assertEquals(UserService.ERR_USER_NOT_FOUND, ex.getErrorCode());
     }
 
-    // ---------------- GET CLIENT BY USERNAME ----------------
+    // ---------------- GET USER BY USERNAME ----------------
 
     @Test
-    void getClientByUsername_Success() throws WalletException {
-        when(clientRepository.findByUsername("john"))
-                .thenReturn(Optional.of(client));
+    void getUserByUsername_Success() throws WalletException {
+        when(userRepository.findByUsername("john"))
+                .thenReturn(Optional.of(user));
 
-        Client result = clientService.getClientByUsername("john");
+        User result = userService.getUserByUsername("john");
 
-        assertEquals(client, result);
+        assertEquals(user, result);
     }
 
     @Test
-    void getClientByUsername_UserNotFound() {
-        when(clientRepository.findByUsername("john"))
+    void getUserByUsername_UserNotFound() {
+        when(userRepository.findByUsername("john"))
                 .thenReturn(Optional.empty());
 
         WalletException ex = assertThrows(
                 WalletException.class,
-                () -> clientService.getClientByUsername("john"));
+                () -> userService.getUserByUsername("john"));
 
-        assertEquals(ClientService.ERR_USER_NOT_FOUND, ex.getErrorCode());
+        assertEquals(UserService.ERR_USER_NOT_FOUND, ex.getErrorCode());
     }
 
     //---------------- PROCESS TRANSACTION USER NOT FOUND ----------------
 
     @Test
     void processTransaction_UserNotFound() {
-        when(clientRepository.findByUsernameForUpdate("john"))
+        when(userRepository.findByUsernameForUpdate("john"))
                 .thenReturn(Optional.empty());
 
         WalletException ex = assertThrows(
                 WalletException.class,
-                () -> clientService.processTransaction(
+                () -> userService.processTransaction(
                         "john",
                         100.0,
                         TransactionType.DEPOSIT,
-                        BalanceType.MAIN));
+                        BalanceType.MAIN,
+                        null));
 
-        assertEquals(ClientService.ERR_USER_NOT_FOUND, ex.getErrorCode());
+        assertEquals(UserService.ERR_USER_NOT_FOUND, ex.getErrorCode());
     }
 
     // ---------------- DEPOSIT ----------------
@@ -184,8 +185,8 @@ class ClientServiceTest {
     @Test
     void processTransaction_DepositMainSuccess() throws WalletException {
 
-        when(clientRepository.findByUsernameForUpdate("john"))
-                .thenReturn(Optional.of(client));
+        when(userRepository.findByUsernameForUpdate("john"))
+                .thenReturn(Optional.of(user));
 
         when(transactionsRepository.getDailyTransactionSum(
                 anyLong(),
@@ -194,14 +195,15 @@ class ClientServiceTest {
                 any()))
                 .thenReturn(20.0);
 
-        when(clientRepository.save(any(Client.class)))
+        when(userRepository.save(any(User.class)))
                 .thenAnswer(i -> i.getArgument(0));
 
-        Client updated = clientService.processTransaction(
+        User updated = userService.processTransaction(
                 "john",
                 50.0,
                 TransactionType.DEPOSIT,
-                BalanceType.MAIN);
+                BalanceType.MAIN,
+                null);
 
         assertEquals(250.0, updated.getMainBalance());
 
@@ -211,21 +213,22 @@ class ClientServiceTest {
 
     @Test
     void processTransaction_DepositVoucherSuccess() throws WalletException {
-        when(clientRepository.findByUsernameForUpdate("john"))
-                .thenReturn(Optional.of(client));
+        when(userRepository.findByUsernameForUpdate("john"))
+                .thenReturn(Optional.of(user));
         when(transactionsRepository.getDailyTransactionSum(
                 eq(1L),
                 eq(TransactionType.DEPOSIT),
                 eq(BalanceType.VOUCHER),
                 any()))
                 .thenReturn(2000.0);
-        when(clientRepository.save(any(Client.class)))
+        when(userRepository.save(any(User.class)))
                 .thenAnswer(i -> i.getArgument(0));
-        Client updated = clientService.processTransaction(
+        User updated = userService.processTransaction(
                 "john",
                 2000.0,
                 TransactionType.DEPOSIT,
-                BalanceType.VOUCHER);
+                BalanceType.VOUCHER,
+                null);
         assertEquals(2500.0, updated.getVoucherBalance());
         verify(transactionsRepository)
                 .save(any(Transactions.class));
@@ -234,8 +237,8 @@ class ClientServiceTest {
     @Test
     void processTransaction_DepositMainLimitExceeded() {
 
-        when(clientRepository.findByUsernameForUpdate("john"))
-                .thenReturn(Optional.of(client));
+        when(userRepository.findByUsernameForUpdate("john"))
+                .thenReturn(Optional.of(user));
 
         when(transactionsRepository.getDailyTransactionSum(
                 anyLong(),
@@ -246,19 +249,20 @@ class ClientServiceTest {
 
         WalletException ex = assertThrows(
                 WalletException.class,
-                () -> clientService.processTransaction(
+                () -> userService.processTransaction(
                         "john",
                         20.0,
                         TransactionType.DEPOSIT,
-                        BalanceType.MAIN));
+                        BalanceType.MAIN,
+                        null));
 
         assertEquals("ERR_LIMIT_EXCEEDED", ex.getErrorCode());
     }
 
     @Test
     void processTransaction_DepositVoucherLimitExceeded() {
-        when(clientRepository.findByUsernameForUpdate("john"))
-                .thenReturn(Optional.of(client));
+        when(userRepository.findByUsernameForUpdate("john"))
+                .thenReturn(Optional.of(user));
         when(transactionsRepository.getDailyTransactionSum(
                 anyLong(),
                 eq(TransactionType.DEPOSIT),
@@ -267,43 +271,43 @@ class ClientServiceTest {
                 .thenReturn(9000.0);
         WalletException ex = assertThrows(
                 WalletException.class,
-                () -> clientService.processTransaction(
+                () -> userService.processTransaction(
                         "john",
                         2000.0,
                         TransactionType.DEPOSIT,
-                        BalanceType.VOUCHER
-                )
-        );
+                        BalanceType.VOUCHER,
+                        null));
         assertEquals("ERR_LIMIT_EXCEEDED", ex.getErrorCode());
     }
 
     @Test
     void processTransaction_BalanceTypeRequired() {
-        when(clientRepository.findByUsernameForUpdate("john"))
-                .thenReturn(Optional.of(client));
+        when(userRepository.findByUsernameForUpdate("john"))
+                .thenReturn(Optional.of(user));
         WalletException ex = assertThrows(WalletException.class,
-                () -> clientService.processTransaction(
+                () -> userService.processTransaction(
                         "john",
                         20.0,
                         TransactionType.DEPOSIT,
-                        null
-                ));
+                        null,
+                        null));
         assertEquals("ERR_BALANCE_TYPE_REQUIRED", ex.getErrorCode());
     }
 
     @Test
     void processTransaction_InvalidAmount() {
 
-        when(clientRepository.findByUsernameForUpdate("john"))
-                .thenReturn(Optional.of(client));
+        when(userRepository.findByUsernameForUpdate("john"))
+                .thenReturn(Optional.of(user));
 
         WalletException ex = assertThrows(
                 WalletException.class,
-                () -> clientService.processTransaction(
+                () -> userService.processTransaction(
                         "john",
                         -1.0,
                         TransactionType.DEPOSIT,
-                        BalanceType.MAIN));
+                        BalanceType.MAIN,
+                        null));
 
         assertEquals("ERR_INVALID_AMOUNT", ex.getErrorCode());
     }
@@ -345,11 +349,11 @@ class ClientServiceTest {
             double expectedVoucherBalance,
             double expectedMainBalance) throws Exception {
 
-        client.setVoucherBalance(voucherBalance);
-        client.setMainBalance(mainBalance);
+        user.setVoucherBalance(voucherBalance);
+        user.setMainBalance(mainBalance);
 
-        when(clientRepository.findByUsernameForUpdate("john"))
-                .thenReturn(Optional.of(client));
+        when(userRepository.findByUsernameForUpdate("john"))
+                .thenReturn(Optional.of(user));
 
         when(transactionsRepository.getDailyTransactionSum(
                 anyLong(),
@@ -365,36 +369,38 @@ class ClientServiceTest {
                 any()))
                 .thenReturn(mainWithdrawnToday);
 
-        when(clientRepository.save(any(Client.class)))
+        when(userRepository.save(any(User.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        Client updated = clientService.processTransaction(
+        User updated = userService.processTransaction(
                 "john",
                 withdrawAmount,
                 TransactionType.WITHDRAW,
+                null,
                 null);
 
         assertEquals(expectedVoucherBalance, updated.getVoucherBalance());
         assertEquals(expectedMainBalance, updated.getMainBalance());
 
-        verify(clientRepository).save(any(Client.class));
+        verify(userRepository).save(any(User.class));
     }
 
     @Test
     void processTransaction_InsufficientFunds() {
 
-        client.setMainBalance(10.0);
-        client.setVoucherBalance(20.0);
+        user.setMainBalance(10.0);
+        user.setVoucherBalance(20.0);
 
-        when(clientRepository.findByUsernameForUpdate("john"))
-                .thenReturn(Optional.of(client));
+        when(userRepository.findByUsernameForUpdate("john"))
+                .thenReturn(Optional.of(user));
 
         WalletException ex = assertThrows(
                 WalletException.class,
-                () -> clientService.processTransaction(
+                () -> userService.processTransaction(
                         "john",
                         100.0,
                         TransactionType.WITHDRAW,
+                        null,
                         null));
 
         assertEquals("ERR_INSUFFICIENT_FUNDS", ex.getErrorCode());
@@ -403,11 +409,11 @@ class ClientServiceTest {
     @Test
     void processTransaction_WithdrawLimitReached() {
 
-        client.setVoucherBalance(500.0);
-        client.setMainBalance(500.0);
+        user.setVoucherBalance(500.0);
+        user.setMainBalance(500.0);
 
-        when(clientRepository.findByUsernameForUpdate("john"))
-                .thenReturn(Optional.of(client));
+        when(userRepository.findByUsernameForUpdate("john"))
+                .thenReturn(Optional.of(user));
 
         // Voucher limit left = 10000 - 9900 = 100
         when(transactionsRepository.getDailyTransactionSum(
@@ -427,26 +433,27 @@ class ClientServiceTest {
 
         WalletException ex = assertThrows(
                 WalletException.class,
-                () -> clientService.processTransaction(
+                () -> userService.processTransaction(
                         "john",
                         200.0,
                         TransactionType.WITHDRAW,
+                        null,
                         null));
 
         assertEquals("ERR_LIMIT_REACHED", ex.getErrorCode());
 
         verify(transactionsRepository).save(any(Transactions.class));
-        verify(clientRepository, never()).save(any(Client.class));
+        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
     void processTransaction_WithdrawLimitOrFundsBreach() {
 
-        client.setVoucherBalance(100.0);
-        client.setMainBalance(500.0);
+        user.setVoucherBalance(100.0);
+        user.setMainBalance(500.0);
 
-        when(clientRepository.findByUsernameForUpdate("john"))
-                .thenReturn(Optional.of(client));
+        when(userRepository.findByUsernameForUpdate("john"))
+                .thenReturn(Optional.of(user));
 
         // Voucher limit left = 200
         when(transactionsRepository.getDailyTransactionSum(
@@ -466,10 +473,11 @@ class ClientServiceTest {
 
         WalletException ex = assertThrows(
                 WalletException.class,
-                () -> clientService.processTransaction(
+                () -> userService.processTransaction(
                         "john",
                         250.0,
                         TransactionType.WITHDRAW,
+                        null,
                         null));
 
         assertEquals("ERR_LIMIT_OR_FUNDS_BREACH", ex.getErrorCode());
@@ -480,8 +488,8 @@ class ClientServiceTest {
     @Test
     void limits_ReturnValues() throws WalletException {
 
-        when(clientRepository.findByUsername("john"))
-                .thenReturn(Optional.of(client));
+        when(userRepository.findByUsername("john"))
+                .thenReturn(Optional.of(user));
 
         when(transactionsRepository.getDailyTransactionSum(
                 anyLong(),
@@ -490,12 +498,14 @@ class ClientServiceTest {
                 any()))
                 .thenReturn(10.0);
 
-        Map<String, Object> limits = clientService.limits("john");
+        Map<String, Object> limits = userService.limits("john");
 
         assertEquals(90.0, limits.get("MainDepositLimitLeft"));
         assertEquals(490.0, limits.get("MainWithdrawLimitLeft"));
         assertEquals(9990.0, limits.get("VoucherDepositLimitLeft"));
         assertEquals(9990.0, limits.get("VoucherWithdrawLimitLeft"));
+        assertEquals(490.0, limits.get("MainTransferLimitLeft"));
+        assertEquals(4990.0, limits.get("VoucherTransferLimitLeft"));
     }
 
     // ---------------- HISTORY ----------------
@@ -510,19 +520,19 @@ class ClientServiceTest {
                 BalanceType.MAIN,
                 Status.SUCCESS);
 
-        when(clientRepository.findByUsername("john"))
-                .thenReturn(Optional.of(client));
+        when(userRepository.findByUsername("john"))
+                .thenReturn(Optional.of(user));
 
-        when(transactionsRepository.findByClientIdOrderByTimestampDesc(1L))
+        when(transactionsRepository.findByUserIdOrderByTimestampDesc(1L))
                 .thenReturn(List.of(tx));
 
         List<Transactions> history =
-                clientService.getTransactionHistory("john");
+                userService.getTransactionHistory("john");
 
         assertEquals(1, history.size());
 
         verify(transactionsRepository)
-                .findByClientIdOrderByTimestampDesc(1L);
+                .findByUserIdOrderByTimestampDesc(1L);
     }
 
 }

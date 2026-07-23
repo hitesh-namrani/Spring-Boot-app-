@@ -2,7 +2,8 @@ package com.example.app.dto;
 
 public enum TransactionType {
     DEPOSIT("Deposit"),
-    WITHDRAW("Withdraw");
+    WITHDRAW("Withdraw"),
+    TRANSFER("Transfer");
     private final String type;
 
     TransactionType(String type) {

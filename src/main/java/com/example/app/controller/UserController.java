@@ -18,7 +18,7 @@ such as registration, deposit, withdrawal, and balance inquiry.
 
 @RestController
 @RequestMapping("/api/users")
-public class UserController {
+    public class UserController {
 
     //Service layer responsible for handling user-related business logic.
     private final UserService service;
@@ -85,6 +85,7 @@ public class UserController {
             @RequestParam Double amount,
             @RequestParam TransactionType transactionType,
             @RequestParam(required = false) BalanceType balanceType,
+            @RequestParam(required = false) String receiverUsername,
             @RequestHeader(value = "Authorization", required = false) String authHeader) throws WalletException {
 
         // Verify the active session via JWT
@@ -92,7 +93,7 @@ public class UserController {
 
         User updatedUser;
 
-        updatedUser = service.processTransaction(sessionUser, amount, transactionType, balanceType);
+        updatedUser = service.processTransaction(sessionUser, amount, transactionType, balanceType, receiverUsername);
         return new ApiResponse(Status.SUCCESS, transactionType + " successful", updatedUser);
     }
 
@@ -123,7 +124,7 @@ public class UserController {
         User user = service.getUserByUsername(sessionUser);
         List<Transactions> history = service.getTransactionHistory(sessionUser);
         List<TransactionResponse> historyDto = history.stream()
-                .map(TransactionResponse::new)
+                .map(item -> new TransactionResponse(item, user))
                 .toList();
         Map<String, Object> responseData = new HashMap<>();
         responseData.put("history", historyDto);

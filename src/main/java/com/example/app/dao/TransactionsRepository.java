@@ -11,13 +11,14 @@ import java.time.Instant;
 import java.util.List;
 
 public interface TransactionsRepository extends JpaRepository<Transactions, Long> {
-    //Find all transactions by a user, sorted latest to oldest
-    List<Transactions> findByClientIdOrderByTimestampDesc(long clientId);
+
+    @Query("SELECT t FROM Transactions t WHERE t.userId = :userId OR t.receiverId = :userId ORDER BY t.timestamp DESC")
+    List<Transactions> findByUserIdOrderByTimestampDesc(long userId);
 
     // Calculates today's total amount for a specific transaction and balance type.
-    @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transactions t WHERE t.clientId = :clientId AND t.transactionType = :transactionType AND t.balanceType = :balanceType AND t.timestamp >= :startOfDay")
+    @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transactions t WHERE t.userId = :userId AND t.transactionType = :transactionType AND t.balanceType = :balanceType AND t.timestamp >= :startOfDay")
     Double getDailyTransactionSum(
-            @Param("clientId") Long clientId,
+            @Param("userId") Long userId,
             @Param("transactionType") TransactionType transactionType,
             @Param("balanceType") BalanceType balanceType,
             @Param("startOfDay") Instant startOfDay

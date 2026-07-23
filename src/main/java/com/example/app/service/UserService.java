@@ -37,6 +37,8 @@ public class UserService {
     private static final double MAIN_WITHDRAW_LIMIT = 500.0;
     private static final double VOUCHER_DEPOSIT_LIMIT = 10000.0;
     private static final double VOUCHER_WITHDRAW_LIMIT = 10000.0;
+    private static final double MAIN_TRANSFER_LIMIT = 500.0;
+    private static final double VOUCHER_TRANSFER_LIMIT = 5000.0;
 
     UserService(UserRepository userRepository, TransactionsRepository transactionsRepository, AppLogger logger, BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
@@ -95,7 +97,7 @@ public class UserService {
 
     //Processes deposits and withdrawals while enforcing wallet rules and limits.
     @Transactional
-    public User processTransaction(String username, Double amount, TransactionType transactionType, BalanceType balanceType) throws WalletException {
+    public User processTransaction(String username, Double amount, TransactionType transactionType, BalanceType balanceType, String receiverUsername) throws WalletException {
 
         // Locks the user row to prevent concurrent balance updates.
         final User user = userRepository.findByUsernameForUpdate(username)
@@ -168,9 +170,25 @@ public class UserService {
                 transactionsRepository.save(new Transactions(user.getId(), mainDeduction, transactionType, BalanceType.MAIN, Status.SUCCESS));
             }
         }
+        else if(transactionType==TransactionType.TRANSFER){
+            if (username.equals(receiverUsername)) {
+                throw new WalletException("ERR_INVALID_RECEIVER", "Cannot transfer funds to yourself.");
+            }
+            User receiver = userRepository.findByUsernameForUpdate(receiverUsername)
+                    .orElseThrow(()-> new WalletException("ERR_RECEIVER_NOT_FOUND","receiver username is incorrect"));
+            if(balanceType==null){
+                throw new WalletException("ERR_BALANCE_TYPE_REQUIRED", "Balance type is required for transfers.");
+            }
+            transfer(user,receiver,amount,balanceType);
+        }
         logger.logTransaction(username, String.valueOf(transactionType), amount);
         // Save the updated balance.
         return userRepository.save(user);
+    }
+    void transfer(User user,User receiver, double amount,BalanceType balanceType){
+        //empty method for implementing transfer functionality
+        //Max main transfer limit per day=500
+        //Max voucher transfer limit per day=5000
     }
 
     //Returns remaining daily transaction limits for a user.
@@ -181,11 +199,15 @@ public class UserService {
         double voucherDepositLimitLeft = VOUCHER_DEPOSIT_LIMIT - transactionsRepository.getDailyTransactionSum(user.getId(), TransactionType.DEPOSIT, BalanceType.VOUCHER, startOfDay);
         double mainWithdrawLimitLeft = MAIN_WITHDRAW_LIMIT - transactionsRepository.getDailyTransactionSum(user.getId(), TransactionType.WITHDRAW, BalanceType.MAIN, startOfDay);
         double voucherWithdrawLimitLeft = VOUCHER_WITHDRAW_LIMIT - transactionsRepository.getDailyTransactionSum(user.getId(), TransactionType.WITHDRAW, BalanceType.VOUCHER, startOfDay);
+        double mainTransferLimitLeft= MAIN_TRANSFER_LIMIT - transactionsRepository.getDailyTransactionSum(user.getId(), TransactionType.TRANSFER,BalanceType.MAIN,startOfDay);
+        double voucherTransferLimitLeft= VOUCHER_TRANSFER_LIMIT - transactionsRepository.getDailyTransactionSum(user.getId(), TransactionType.TRANSFER,BalanceType.VOUCHER,startOfDay);
         Map<String, Object> data = new HashMap<>();
         data.put("MainDepositLimitLeft", mainDepositLimitLeft);
         data.put("MainWithdrawLimitLeft", mainWithdrawLimitLeft);
+        data.put("MainTransferLimitLeft", mainTransferLimitLeft);
         data.put("VoucherDepositLimitLeft", voucherDepositLimitLeft);
         data.put("VoucherWithdrawLimitLeft", voucherWithdrawLimitLeft);
+        data.put("VoucherTransferLimitLeft", voucherTransferLimitLeft);
         return data;
     }
 

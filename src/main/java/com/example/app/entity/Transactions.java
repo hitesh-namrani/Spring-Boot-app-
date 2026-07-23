@@ -21,9 +21,9 @@ public class Transactions {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long transactionId;
 
-    // Identifier of the client associated with this transaction.
+    // Identifier of the user associated with this transaction.
     @Column(nullable = false)
-    private long clientId;//Foreign key from Client entity
+    private long userId;//Foreign key from User entity
 
     // Time when the transaction was created.
     @Column(nullable = false, updatable = false)
@@ -48,19 +48,31 @@ public class Transactions {
     @Column(nullable = false)
     private Status status;
 
+    @Column (nullable = true)
+    private Long receiverId;
+
     // Automatically sets the transaction timestamp before saving.
     @PrePersist
     protected void onCreate() {
         this.timestamp = Instant.now();
+        this.receiverId=null;
     }
 
     // Creates a transaction record with the provided details.
-    public Transactions(long clientId, Double amount, TransactionType transactionType, BalanceType balanceType, Status status) {
-        this.clientId = clientId;
+    public Transactions(long userId, Double amount, TransactionType transactionType, BalanceType balanceType, Status status) {
+        this.userId = userId;
         this.amount = amount;
         this.transactionType = transactionType;
         this.balanceType = balanceType;
         this.status = status;
+    }
+    public Transactions(long userId, Double amount, TransactionType transactionType, BalanceType balanceType, Status status,Long receiverId) {
+        this.userId = userId;
+        this.amount = amount;
+        this.transactionType = transactionType;
+        this.balanceType = balanceType;
+        this.status = status;
+        this.receiverId=receiverId;
     }
 
 }

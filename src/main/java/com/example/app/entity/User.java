@@ -5,14 +5,15 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 /*
-Represents a client Entity in the application. 
-Stores the client's login credentials and account balance.
+Represents a user Entity in the application.
+Stores the user's login credentials and account balance.
 */
 
 @Entity
+@Table(name="users")
 @Getter
 @Setter
-public class Client {
+public class User {
 
     //Auto-Incrementing Primary Key
     @Id
@@ -23,7 +24,7 @@ public class Client {
     @Column(unique = true, nullable = false)
     private String username;
 
-    // Stores the client's hashed password and excludes it from JSON responses.
+    // Stores the user's hashed password and excludes it from JSON responses.
     @JsonIgnore
     private String password;
 
@@ -37,15 +38,15 @@ public class Client {
     Default constructor required by JPA.
     Should not be used directly.
     */
-    protected Client() {
+    protected User() {
     }
     
     /*
-    Creates a new client with the specified username and hashed password.
+    Creates a new user with the specified username and hashed password.
     The initial account balance is set to 0.0.
     */
 
-    public Client(String username, String password) {
+    public User(String username, String password) {
         this.username = username;
         this.password = password;
         this.mainBalance = 0.0;
