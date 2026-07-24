@@ -55,7 +55,6 @@ public class Transactions {
     @PrePersist
     protected void onCreate() {
         this.timestamp = Instant.now();
-        this.receiverId=null;
     }
 
     // Creates a transaction record with the provided details.
@@ -65,6 +64,7 @@ public class Transactions {
         this.transactionType = transactionType;
         this.balanceType = balanceType;
         this.status = status;
+        this.receiverId = null;
     }
     public Transactions(long userId, Double amount, TransactionType transactionType, BalanceType balanceType, Status status,Long receiverId) {
         this.userId = userId;

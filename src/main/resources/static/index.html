@@ -92,11 +92,17 @@
                placeholder="Amount"
                style="padding:10px;width:200px;border:1px solid #ccc;border-radius:5px;">
 
+        <input id="receiverUsername"
+               type="text"
+               placeholder="Receiver Username"
+               style="padding:10px;width:200px;border:1px solid #ccc;border-radius:5px;display:none;">
+
         <select id="type"
                 onchange="toggleBalanceType()"
                 style="padding:10px;border:1px solid #ccc;border-radius:5px;">
             <option value="DEPOSIT">Deposit</option>
             <option value="WITHDRAW">Withdraw</option>
+            <option value="TRANSFER">Transfer</option>
         </select>
 
         <span id="balanceTypeContainer">
@@ -140,11 +146,17 @@
 
         const type = document.getElementById("type").value;
         const container = document.getElementById("balanceTypeContainer");
+        const receiverUsername = document.getElementById("receiverUsername");
 
         if (type === "WITHDRAW") {
             container.style.display = "none";
+            receiverUsername.style.display="none";
         } else {
             container.style.display = "inline-block";
+            receiverUsername.style.display="none";
+        }
+        if(type==="TRANSFER"){
+            receiverUsername.style.display = "inline-block";
         }
     }
 
@@ -229,20 +241,27 @@
 
         const amount = document.getElementById("amount").value;
         const type = document.getElementById("type").value;
-
+        const receiverUsername = document.getElementById("receiverUsername").value;
         if (!amount || amount <= 0) {
             show({ error: "Enter a valid amount" });
+            return;
+        }
+        if(type === "TRANSFER" && !receiverUsername){
+            show({ error: "Receiver Username is required" });
             return;
         }
 
         let url =
             `${BASE_URL}/transaction?amount=${amount}&transactionType=${type}`;
 
-        if (type === "DEPOSIT") {
+        if (type === "DEPOSIT"||type === "TRANSFER") {
             const balanceType =
                 document.getElementById("balanceType").value;
 
             url += `&balanceType=${balanceType}`;
+        }
+        if(type === "TRANSFER"){
+            url+= `&receiverUsername=${receiverUsername}`;
         }
 
         try {

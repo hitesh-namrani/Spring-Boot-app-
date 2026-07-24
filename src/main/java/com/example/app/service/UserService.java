@@ -107,6 +107,13 @@ public class UserService {
             logger.logError(String.valueOf(transactionType), "Invalid amount: " + amount);
             throw new WalletException("ERR_INVALID_AMOUNT", "Amount must be greater than zero.");
         }
+
+        //balanceType can't be BOTH
+        if(balanceType == BalanceType.BOTH) {
+            logger.logError(String.valueOf(transactionType), "Invalid balanceType");
+            throw new WalletException("ERR_INVALID_BALANCE_TYPE", "Invalid balanceType");
+        }
+
         Instant startOfDay = LocalDate.now(ZoneOffset.UTC).atStartOfDay().toInstant(ZoneOffset.UTC);
 
         // Deposit processing logic.
@@ -179,16 +186,38 @@ public class UserService {
             if(balanceType==null){
                 throw new WalletException("ERR_BALANCE_TYPE_REQUIRED", "Balance type is required for transfers.");
             }
-            transfer(user,receiver,amount,balanceType);
+            transfer(user,receiver,amount,balanceType,startOfDay);
         }
         logger.logTransaction(username, String.valueOf(transactionType), amount);
         // Save the updated balance.
         return userRepository.save(user);
     }
-    void transfer(User user,User receiver, double amount,BalanceType balanceType) throws WalletException{
+    void transfer(User user,User receiver, double amount,BalanceType balanceType,Instant startOfDay) throws WalletException{
         //empty method for implementing transfer functionality
         //Max main transfer limit per day=500
         //Max voucher transfer limit per day=5000
+        final double limit=(balanceType==BalanceType.MAIN)?MAIN_TRANSFER_LIMIT:VOUCHER_TRANSFER_LIMIT;
+        final double limitLeft=limit-transactionsRepository.getDailyTransactionSum(user.getId(),TransactionType.TRANSFER, balanceType, startOfDay);
+        if(limitLeft<amount){
+            logger.logError("Transfer","Limit reached");
+            transactionsRepository.save(new Transactions(user.getId(), amount, TransactionType.TRANSFER, balanceType, Status.FAILED));
+            throw new WalletException("ERR_LIMIT_REACHED", "Limit reached for "+balanceType+" . Remaining limit: "+limitLeft);
+        }
+        double funds = (balanceType==BalanceType.MAIN)?user.getMainBalance():user.getVoucherBalance();
+        if(funds<amount){
+            logger.logError("Transfer","Insufficient funds!");
+            transactionsRepository.save(new Transactions(user.getId(), amount, TransactionType.TRANSFER, balanceType, Status.FAILED));
+            throw new WalletException("ERR_INSUFFICIENT_FUNDS", "Insufficient funds!");
+        }
+        else if (balanceType==BalanceType.MAIN) {
+            user.setMainBalance(user.getMainBalance()-amount);
+            receiver.setMainBalance(receiver.getMainBalance()+amount);
+        }
+        else if (balanceType==BalanceType.VOUCHER) {
+            user.setVoucherBalance(user.getVoucherBalance()-amount);
+            receiver.setVoucherBalance(receiver.getVoucherBalance()+amount);
+        }
+        transactionsRepository.save(new Transactions(user.getId(), amount,TransactionType.TRANSFER,balanceType,Status.SUCCESS, receiver.getId()));
     }
 
     //Returns remaining daily transaction limits for a user.

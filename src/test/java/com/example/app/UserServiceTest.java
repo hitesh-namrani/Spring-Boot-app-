@@ -538,7 +538,7 @@ class UserServiceTest {
     //---------------- TRANSFER ----------------
 
     @Test
-    void processTransaction_InvalidReceiver(){
+    void processTransaction_Transfer_InvalidReceiver(){
         when(userRepository.findByUsernameForUpdate("john"))
                 .thenReturn(Optional.of(user));
         WalletException ex = assertThrows(
@@ -553,10 +553,10 @@ class UserServiceTest {
     }
 
     @Test
-    void processTransaction_ReceiverNotFound(){
+    void processTransaction_Transfer_ReceiverNotFound(){
         when(userRepository.findByUsernameForUpdate("john"))
                 .thenReturn(Optional.of(user));
-        when(userRepository.findByUsernameForUpdate("john1"))
+        when(userRepository.findByUsernameForUpdate("receiver"))
                 .thenReturn(Optional.empty());
         WalletException ex = assertThrows(WalletException.class,
                 () -> userService.processTransaction(
@@ -564,7 +564,7 @@ class UserServiceTest {
                         20.0,
                         TransactionType.TRANSFER,
                         null,
-                        "john1"));
+                        "receiver"));
         assertEquals("ERR_RECEIVER_NOT_FOUND",ex.getErrorCode());
     }
 
@@ -572,7 +572,7 @@ class UserServiceTest {
     void processTransaction_Transfer_BalanceTypeRequired() {
         when(userRepository.findByUsernameForUpdate("john"))
                 .thenReturn(Optional.of(user));
-        when(userRepository.findByUsernameForUpdate("john1"))
+        when(userRepository.findByUsernameForUpdate("receiver"))
                 .thenReturn(Optional.of(user));
         WalletException ex = assertThrows(WalletException.class,
                 () -> userService.processTransaction(
@@ -580,7 +580,7 @@ class UserServiceTest {
                         20.0,
                         TransactionType.TRANSFER,
                         null,
-                        "john1"));
+                        "receiver"));
         assertEquals("ERR_BALANCE_TYPE_REQUIRED", ex.getErrorCode());
     }
 
@@ -603,7 +603,7 @@ class UserServiceTest {
                 .thenReturn(50.0);
         when(userRepository.save(any(User.class)))
                 .thenAnswer(i->i.getArgument(0));
-        User user = userService.processTransaction(
+        user = userService.processTransaction(
                 "john",
                 50.0,
                 TransactionType.TRANSFER,
@@ -632,7 +632,7 @@ class UserServiceTest {
                 .thenReturn(50.0);
         when(userRepository.save(any(User.class)))
                 .thenAnswer(i->i.getArgument(0));
-        User user = userService.processTransaction(
+        user = userService.processTransaction(
                 "john",
                 50.0,
                 TransactionType.TRANSFER,
@@ -663,7 +663,7 @@ class UserServiceTest {
                         TransactionType.TRANSFER,
                         BalanceType.MAIN,
                         "receiver"));
-        assertEquals("ERR_LIMIT_EXCEEDED", ex.getErrorCode());
+        assertEquals("ERR_LIMIT_REACHED", ex.getErrorCode());
     }
     @Test
     void processTransaction_Transfer_VoucherLimitExceeded() {
@@ -686,7 +686,7 @@ class UserServiceTest {
                         TransactionType.TRANSFER,
                         BalanceType.VOUCHER,
                         "receiver"));
-        assertEquals("ERR_LIMIT_EXCEEDED", ex.getErrorCode());
+        assertEquals("ERR_LIMIT_REACHED", ex.getErrorCode());
     }
     @Test
     void processTransaction_Transfer_InsufficientMainFunds() {
@@ -705,6 +705,7 @@ class UserServiceTest {
                         "receiver"));
         assertEquals("ERR_INSUFFICIENT_FUNDS", ex.getErrorCode());
     }
+
     @Test
     void processTransaction_Transfer_InsufficientVoucherFunds() {
         User receiver = new User("receiver", "hashedPassword");
@@ -721,5 +722,21 @@ class UserServiceTest {
                         BalanceType.VOUCHER,
                         "receiver"));
         assertEquals("ERR_INSUFFICIENT_FUNDS", ex.getErrorCode());
+    }
+
+    @Test
+    void processTransaction_Transfer_InvalidBalanceType() {
+        when(userRepository.findByUsernameForUpdate("john"))
+                .thenReturn(Optional.of(user));
+        WalletException ex=assertThrows(
+                WalletException.class,
+                ()->userService.processTransaction(
+                        "john",
+                        20.0,
+                        TransactionType.DEPOSIT,
+                        BalanceType.BOTH,
+                        null
+                ));
+        assertEquals("ERR_INVALID_BALANCE_TYPE", ex.getErrorCode());
     }
 }
